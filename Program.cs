@@ -1324,11 +1324,11 @@ class Program : ApplicationContext
         lnkAssets.LinkClicked += (s, e) => OpenUrl(assetsUrl);
         System.Windows.Forms.Button btnReset = new System.Windows.Forms.Button()
         {
-            Text = "Reset Default", // Bisa diganti "Reset" saja
-            Left = 210, // Di sebelah kiri tombol Simpan
+            Text = "Reset Default", // Can be replaced with just “Reset”
+            Left = 210, // To the left of the Save button
             Width = 120,
             Top = 180,
-            BackColor = Color.FromArgb(79, 84, 92), // Warna abu-abu (Secondary)
+            BackColor = Color.FromArgb(79, 84, 92), // Gray (Secondary)
             FlatStyle = FlatStyle.Flat,
             ForeColor = Color.White,
             Cursor = Cursors.Hand
@@ -1342,7 +1342,7 @@ class Program : ApplicationContext
             Width = 120,
             Top = 180,
             DialogResult = DialogResult.OK,
-            BackColor = Color.FromArgb(88, 101, 242), // Warna Blurple (Primary)
+            BackColor = Color.FromArgb(88, 101, 242), // Blurple (Primary)
             FlatStyle = FlatStyle.Flat,
             ForeColor = Color.White,
             Cursor = Cursors.Hand
