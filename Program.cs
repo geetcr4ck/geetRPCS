@@ -1,4 +1,4 @@
-﻿/**
+/**
  * geetRPCS - Main Application
  * Discord Rich Presence Custom Switcher main logic
  */
@@ -122,7 +122,7 @@ class Program : ApplicationContext
 
                         if (mode == "Dialog")
                         {
-                             UpdateChecker.ShowEnhancedUpdateDialog(release);
+                             UpdateDialogs.ShowEnhancedUpdateDialog(release);
                         }
                         else if (mode == "Notification")
                         {
@@ -380,7 +380,7 @@ class Program : ApplicationContext
             if (File.Exists(ConfigPath))
             {
                 string json = File.ReadAllText(ConfigPath);
-                var cfg = JsonSerializer.Deserialize<Config>(json);
+                var cfg = JsonSerializer.Deserialize(json, JsonContext.Default.Config);
                 if (cfg?.Discord != null && !string.IsNullOrEmpty(cfg.Discord.ApplicationId))
                 {
                     Log("Config loaded from config.json");
@@ -530,7 +530,7 @@ class Program : ApplicationContext
                if (_pendingUpdate != null)
                {
                    _threadMarshaller.Invoke(new Action(() => {
-                        UpdateChecker.ShowEnhancedUpdateDialog(_pendingUpdate);
+                        UpdateDialogs.ShowEnhancedUpdateDialog(_pendingUpdate);
                         _pendingUpdate = null; // Clear after showing
                    }));
                }
@@ -997,7 +997,7 @@ class Program : ApplicationContext
                     {
                         config.Discord.ApplicationId = newId.Trim();
                         var options = new JsonSerializerOptions { WriteIndented = true };
-                        File.WriteAllText(ConfigPath, JsonSerializer.Serialize(config, options));
+                        File.WriteAllText(ConfigPath, JsonSerializer.Serialize(config, typeof(Config), new JsonContext(options)));
                         try
                         {
                             OnReload(null, EventArgs.Empty);
@@ -1049,7 +1049,7 @@ class Program : ApplicationContext
                     var release = await UpdateChecker.CheckForUpdates(showUpToDateMessage: true);
                     if (release != null)
                     {
-                        _threadMarshaller.Invoke(new Action(() => UpdateChecker.ShowEnhancedUpdateDialog(release)));
+                        _threadMarshaller.Invoke(new Action(() => UpdateDialogs.ShowEnhancedUpdateDialog(release)));
                     }
                 });
             menu.Items.Add(LanguageManager.Current.MenuOpenLog, null, (_, __) =>
@@ -1254,7 +1254,7 @@ class Program : ApplicationContext
                 WriteIndented = true,
                 Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
             };
-            File.WriteAllText(ConfigPath, JsonSerializer.Serialize(defaultConfig, options));
+            File.WriteAllText(ConfigPath, JsonSerializer.Serialize(defaultConfig, typeof(Config), new JsonContext(options)));
             Log("Created default config.json");
             ShowBalloonTip(LanguageManager.Current.AppName, LanguageManager.Current.MsgConfigCreated, ToolTipIcon.Info);
         }
@@ -1554,31 +1554,6 @@ class Program : ApplicationContext
         }
         catch { }
         finally { Application.Exit(); }
-    }
-    #endregion
-    #region ----- Models -----
-    public class Config { public DiscordConfig? Discord { get; set; } }
-    public class DiscordConfig
-    {
-        public string ApplicationId { get; set; } = "";
-        public string? Details { get; set; }
-        public string? State { get; set; }
-        public string? ActiveDetails { get; set; }
-        public string? ActiveState { get; set; }
-        public AssetConfig? Assets { get; set; }
-        public ButtonConfig[]? Buttons { get; set; }
-    }
-    public class AssetConfig
-    {
-        public string? LargeImageKey { get; set; }
-        public string? LargeImageText { get; set; }
-        public string? SmallImageKey { get; set; }
-        public string? SmallImageText { get; set; }
-    }
-    public class ButtonConfig
-    {
-        public string? Label { get; set; }
-        public string? Url { get; set; }
     }
     #endregion
 }

@@ -20,9 +20,7 @@ using System.Runtime.CompilerServices;
 
 namespace geetRPCS.Services
 {
-    /// <summary>
-    /// Log levels for filtering messages
-    /// </summary>
+    // Log levels for filtering messages
     public enum LogLevel
     {
         DEBUG = 0,
@@ -31,9 +29,7 @@ namespace geetRPCS.Services
         ERROR = 3
     }
 
-    /// <summary>
-    /// Centralized logging service with log rotation and level filtering
-    /// </summary>
+    // Centralized logging service with log rotation and level filtering
     internal static class LogService
     {
         private static readonly object _lock = new object();
@@ -49,9 +45,7 @@ namespace geetRPCS.Services
         private static int _writeCount = 0;
         private static readonly string AppFolder = AppDomain.CurrentDomain.BaseDirectory;
 
-        /// <summary>
-        /// Initialize the log service. Must be called once at startup.
-        /// </summary>
+        // Initialize the log service. Must be called once at startup.
         public static void Initialize(string? logFileName = null, LogLevel? minLevel = null)
         {
             lock (_lock)
@@ -74,9 +68,7 @@ namespace geetRPCS.Services
             }
         }
 
-        /// <summary>
-        /// Set the minimum log level at runtime
-        /// </summary>
+        // Set the minimum log level at runtime
         public static void SetMinLevel(LogLevel level)
         {
             lock (_lock)
@@ -85,50 +77,37 @@ namespace geetRPCS.Services
             }
         }
 
-        /// <summary>
-        /// Set the minimum log level from string
-        /// </summary>
+        // Set the minimum log level from string
         public static void SetMinLevel(string levelStr)
         {
             SetMinLevel(ParseLogLevel(levelStr));
         }
 
-        /// <summary>
-        /// Log a DEBUG message (verbose, for development)
-        /// </summary>
+        // Log a DEBUG message (verbose, for development)
         public static void Debug(string message, [CallerMemberName] string module = "")
             => Write(LogLevel.DEBUG, message, module);
 
-        /// <summary>
-        /// Log an INFO message (normal operation)
-        /// </summary>
+
+        // Log an INFO message (normal operation)
         public static void Info(string message, [CallerMemberName] string module = "")
             => Write(LogLevel.INFO, message, module);
 
-        /// <summary>
-        /// Log a WARN message (potential issues)
-        /// </summary>
+        // Log a WARN message (potential issues)
         public static void Warn(string message, [CallerMemberName] string module = "")
             => Write(LogLevel.WARN, message, module);
 
-        /// <summary>
-        /// Log an ERROR message (failures)
-        /// </summary>
+        // Log an ERROR message (failures)
         public static void Error(string message, [CallerMemberName] string module = "")
             => Write(LogLevel.ERROR, message, module);
 
-        /// <summary>
-        /// Log with explicit level and module (for backward compatibility)
-        /// </summary>
+        // Log with explicit level and module (for backward compatibility)
         public static void Log(string message, string level = "INFO", string module = "geetRPCS")
         {
             var logLevel = ParseLogLevel(level);
             Write(logLevel, message, module);
         }
 
-        /// <summary>
-        /// Core logging method
-        /// </summary>
+        // Core logging method
         private static void Write(LogLevel level, string message, string module)
         {
             // Early exit if below minimum level
@@ -164,9 +143,7 @@ namespace geetRPCS.Services
             }
         }
 
-        /// <summary>
-        /// Rotate log files if current file exceeds max size
-        /// </summary>
+        // Rotate log files if current file exceeds max size
         private static void RotateIfNeeded()
         {
             try
@@ -204,9 +181,7 @@ namespace geetRPCS.Services
             }
         }
 
-        /// <summary>
-        /// Parse log level string to enum
-        /// </summary>
+        // Parse log level string to enum
         private static LogLevel ParseLogLevel(string levelStr)
         {
             return levelStr?.ToUpperInvariant() switch
@@ -219,9 +194,7 @@ namespace geetRPCS.Services
             };
         }
 
-        /// <summary>
-        /// Get configured log level from settings
-        /// </summary>
+        // Get configured log level from settings
         private static string GetConfiguredLogLevel()
         {
             try
@@ -235,9 +208,7 @@ namespace geetRPCS.Services
             }
         }
 
-        /// <summary>
-        /// Cleanup resources on application exit
-        /// </summary>
+        // Cleanup resources on application exit
         public static void Shutdown()
         {
             lock (_lock)

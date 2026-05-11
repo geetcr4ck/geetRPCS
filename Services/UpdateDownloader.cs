@@ -39,10 +39,8 @@ namespace geetRPCS.Services
         private static readonly string TempUpdateFolder = Path.Combine(Path.GetTempPath(), "geetRPCS_update");
         private const int BUFFER_SIZE = 81920; // 80 KB buffer for faster downloads
 
-        /// <summary>
-        /// Detects the installed version type based on file structure.
-        /// Portable version is larger and self-contained (>30MB), minimal is small (<10MB).
-        /// </summary>
+        // Detects the installed version type based on file structure.
+        // Portable version is larger and self-contained (>30MB), minimal is small (<10MB).
         public string DetectInstalledVersionType()
         {
             try
@@ -91,9 +89,7 @@ namespace geetRPCS.Services
             }
         }
 
-        /// <summary>
-        /// Downloads and extracts the update, returning the path to extracted files.
-        /// </summary>
+        // Downloads and extracts the update, returning the path to extracted files.
         public async Task<string?> PrepareUpdateAsync(GitHubRelease release, CancellationToken ct = default)
         {
             try
@@ -181,9 +177,7 @@ namespace geetRPCS.Services
             }
         }
 
-        /// <summary>
-        /// Finds the matching asset for the given version type.
-        /// </summary>
+        // Finds the matching asset for the given version type.
         private GitHubAsset? FindMatchingAsset(GitHubRelease release, string versionType)
         {
             if (release.Assets == null || release.Assets.Count == 0)
@@ -214,17 +208,13 @@ namespace geetRPCS.Services
             return null;
         }
 
-        /// <summary>
-        /// Downloads a file with progress reporting.
-        /// Uses rolling average for speed calculation for smoother updates.
-        /// </summary>
+        // Downloads a file with progress reporting.
+        // Uses rolling average for speed calculation for smoother updates.
         private async Task<bool> DownloadFileAsync(string url, string destinationPath, long expectedSize, CancellationToken ct)
         {
             try
             {
-                using var client = new HttpClient();
-                client.DefaultRequestHeaders.Add("User-Agent", "geetRPCS-Updater");
-                client.Timeout = TimeSpan.FromMinutes(30);
+                var client = UpdateChecker.SharedHttpClient;
 
                 using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
                 response.EnsureSuccessStatusCode();
@@ -317,9 +307,7 @@ namespace geetRPCS.Services
             }
         }
 
-        /// <summary>
-        /// Extracts a ZIP file to the specified path.
-        /// </summary>
+        // Extracts a ZIP file to the specified path.
         private async Task<bool> ExtractZipAsync(string zipPath, string extractPath, CancellationToken ct)
         {
             try
@@ -350,9 +338,7 @@ namespace geetRPCS.Services
             }
         }
 
-        /// <summary>
-        /// Finds the actual content folder (handles nested folder in ZIP).
-        /// </summary>
+        // Finds the actual content folder (handles nested folder in ZIP).
         private string FindContentFolder(string extractPath)
         {
             var dirs = Directory.GetDirectories(extractPath);
@@ -389,9 +375,7 @@ namespace geetRPCS.Services
             return extractPath;
         }
 
-        /// <summary>
-        /// Cleans up the temporary update folder.
-        /// </summary>
+        // Cleans up the temporary update folder.
         public void CleanupTempFolder()
         {
             try
@@ -408,9 +392,7 @@ namespace geetRPCS.Services
             }
         }
 
-        /// <summary>
-        /// Launches the updater helper to perform the actual update.
-        /// </summary>
+        // Launches the updater helper to perform the actual update.
         public bool LaunchUpdater(string sourcePath)
         {
             try
@@ -447,9 +429,7 @@ namespace geetRPCS.Services
             }
         }
 
-        /// <summary>
-        /// Gets the path to the temp update folder.
-        /// </summary>
+        // Gets the path to the temp update folder.
         public static string GetTempUpdateFolder() => TempUpdateFolder;
 
         private static void Log(string message, string level = "INFO")

@@ -192,6 +192,8 @@ dotnet publish -c Release -r win-x64 -p:PublishSingleFile=false -p:SelfContained
 
 - **Silent Auto-Update (v1.3.6)**
 - **Shortcut Manager (v1.3.6)**
+- **Network Retry System (v1.3.9)**
+- **Shared HttpClient (v1.3.9)**
 - **Zero Disk I/O Animations**
 - **Optimized Async I/O**
 - True Hot Reload
@@ -439,7 +441,7 @@ You can now assign **different Discord App IDs for specific applications** witho
     "ActiveState": "{window_title}",
     "Assets": {
       "LargeImageKey": "geetrpcs-logo",
-      "LargeImageText": "geetRPCS v1.3.8",
+      "LargeImageText": "geetRPCS v1.3.9",
       "SmallImageKey": "verified",
       "SmallImageText": "Powered by geetRPCS"
     },
@@ -635,6 +637,7 @@ If you see a red warning on VirusTotal or Windows Defender:
 - [x] Centralized Logging System (v1.3.5)
 - [x] **Silent Auto-Update (v1.3.6) 🆕**
 - [x] **Shortcut Manager (v1.3.6) 🆕**
+- [x] **Network & Reliability Update (v1.3.9) 🆕**
 - [ ] More software support
 - [ ] UI Dashboard (WPF/WinUI)
 
@@ -652,5 +655,5 @@ If you see a red warning on VirusTotal or Windows Defender:
 
 <p align="center">
   <sub>Made with ❤️ by <a href="https://github.com/makcrtve">makcrtve</a></sub><br/>
-  <sub>geetRPCS v1.3.8 • Apache 2.0 License • 2026</sub>
+  <sub>geetRPCS v1.3.9 • Apache 2.0 License • 2026</sub>
 </p>

@@ -10,10 +10,8 @@ namespace geetRPCS.Utils
         private static readonly string AppName = "geetRPCS";
         private static readonly string ExePath = Environment.ProcessPath!;
         private static readonly string WorkingDir = Path.GetDirectoryName(ExePath) ?? "";
-
-        /// <summary>
-        /// Check if desktop shortcut exists
-        /// </summary>
+ 
+        // Check if desktop shortcut exists
         public static bool IsDesktopShortcutExists()
         {
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
@@ -21,9 +19,7 @@ namespace geetRPCS.Utils
             return File.Exists(shortcutPath);
         }
 
-        /// <summary>
-        /// Check if start menu shortcut exists
-        /// </summary>
+        // Check if start menu shortcut exists
         public static bool IsStartMenuShortcutExists()
         {
             string startMenuPath = Path.Combine(
@@ -35,9 +31,7 @@ namespace geetRPCS.Utils
             return File.Exists(shortcutPath);
         }
 
-        /// <summary>
-        /// Create desktop shortcut using PowerShell
-        /// </summary>
+        // Create desktop shortcut using PowerShell
         public static void CreateDesktopShortcut()
         {
             try
@@ -63,9 +57,7 @@ namespace geetRPCS.Utils
             }
         }
 
-        /// <summary>
-        /// Create start menu shortcut using PowerShell
-        /// </summary>
+        // Create start menu shortcut using PowerShell
         public static void CreateStartMenuShortcut()
         {
             try
@@ -101,10 +93,8 @@ namespace geetRPCS.Utils
                 throw;
             }
         }
-
-        /// <summary>
-        /// Remove desktop shortcut
-        /// </summary>
+        
+        // Remove desktop shortcut
         public static void RemoveDesktopShortcut()
         {
             try
@@ -125,9 +115,7 @@ namespace geetRPCS.Utils
             }
         }
 
-        /// <summary>
-        /// Remove start menu shortcut
-        /// </summary>
+        // Remove start menu shortcut
         public static void RemoveStartMenuShortcut()
         {
             try
@@ -158,9 +146,7 @@ namespace geetRPCS.Utils
             }
         }
 
-        /// <summary>
-        /// Refresh icon cache to make shortcuts appear immediately
-        /// </summary>
+        // Refresh icon cache to make shortcuts appear immediately
         public static void RefreshIconCache()
         {
             try
@@ -179,9 +165,7 @@ namespace geetRPCS.Utils
             }
         }
 
-        /// <summary>
-        /// Create shortcut using PowerShell
-        /// </summary>
+        // Create shortcut using PowerShell
         private static void CreateShortcutViaPowerShell(string shortcutPath, string targetPath, string workingDir)
         {
             // Escape paths for PowerShell

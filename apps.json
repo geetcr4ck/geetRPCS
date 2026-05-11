@@ -1,6 +1,6 @@
 ﻿[
   {
-    "db_version": "1.3.8.1",
+    "db_version": "1.3.9",
     "_comment": "Database Version - DO NOT REMOVE"
   },
   {
@@ -34,7 +34,10 @@
     "smallKey": "geetrpcs-small",
     "customDetails": "{witty_text}",
     "buttons": [
-      { "label": "My Website", "url": "https://yourwebsite.com" }
+      {
+        "label": "My Website",
+        "url": "https://yourwebsite.com"
+      }
     ]
   },
   {

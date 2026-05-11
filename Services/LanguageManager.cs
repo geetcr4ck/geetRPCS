@@ -113,12 +113,7 @@ namespace geetRPCS.Services
                 }
 
                 string json = File.ReadAllText(path);
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                };
-
-                var language = JsonSerializer.Deserialize<Language>(json, options);
+                var language = JsonSerializer.Deserialize(json, Utils.JsonContext.Default.Language);
                 Log($"Loaded language: {languageCode}", "INFO");
                 return language ?? new Language();
             }

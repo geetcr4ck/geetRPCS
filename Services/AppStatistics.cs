@@ -56,7 +56,7 @@ namespace geetRPCS.Services
                     return new AppStatistics();
                 }
                 string json = File.ReadAllText(StatsPath);
-                var stats = JsonSerializer.Deserialize<AppStatistics>(json, _readOptions);
+                var stats = JsonSerializer.Deserialize(json, Utils.JsonContext.Default.AppStatistics);
                 Log($"Loaded {stats.AppUsage.Count} tracked apps", "INFO");
                 return stats ?? new AppStatistics();
             }
@@ -70,7 +70,7 @@ namespace geetRPCS.Services
         public string PrepareJson()
         {
             LastUpdated = DateTime.Now;
-            return JsonSerializer.Serialize(this, _writeOptions);
+            return JsonSerializer.Serialize(this, Utils.JsonContext.Default.AppStatistics);
         }
         public static async Task WriteJsonAsync(string json)
         {
@@ -167,7 +167,7 @@ namespace geetRPCS.Services
         }
         public string PrepareExportJSON()
         {
-            return JsonSerializer.Serialize(this, _writeOptions);
+            return JsonSerializer.Serialize(this, Utils.JsonContext.Default.AppStatistics);
         }
         public async Task<string> WriteExportAsync(string content, string extension)
         {

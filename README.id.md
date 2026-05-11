@@ -192,6 +192,8 @@ dotnet publish -c Release -r win-x64 -p:PublishSingleFile=false -p:SelfContained
 
 - **Update Otomatis Senyap (v1.3.6)**
 - **Manajer Shortcut (v1.3.6)**
+- **Sistem Retry Jaringan (v1.3.9)**
+- **Shared HttpClient (v1.3.9)**
 - **Animasi Nol Disk I/O**
 - **Async I/O Teroptimasi**
 - True Hot Reload
@@ -439,7 +441,7 @@ Anda sekarang bisa menetapkan **Discord App ID yang berbeda untuk aplikasi terte
     "ActiveState": "{window_title}",
     "Assets": {
       "LargeImageKey": "geetrpcs-logo",
-      "LargeImageText": "geetRPCS v1.3.8",
+      "LargeImageText": "geetRPCS v1.3.9",
       "SmallImageKey": "verified",
       "SmallImageText": "Powered by geetRPCS"
     },
@@ -642,6 +644,7 @@ Jika Anda melihat peringatan merah di VirusTotal atau Windows Defender:
 - [x] Sistem Logging Terpusat (v1.3.5)
 - [x] **Update Otomatis Senyap (v1.3.6) 🆕**
 - [x] **Manajer Shortcut (v1.3.6) 🆕**
+- [x] **Update Jaringan & Reliabilitas (v1.3.9) 🆕**
 - [ ] Dukungan software lebih banyak
 - [ ] UI Dashboard (WPF/WinUI)
 
@@ -659,5 +662,5 @@ Jika Anda melihat peringatan merah di VirusTotal atau Windows Defender:
 
 <p align="center">
   <sub>Dibuat dengan ❤️ oleh <a href="https://github.com/makcrtve">makcrtve</a></sub><br/>
-  <sub>geetRPCS v1.3.8 • Apache 2.0 License • 2026</sub>
+  <sub>geetRPCS v1.3.9 • Apache 2.0 License • 2026</sub>
 </p>

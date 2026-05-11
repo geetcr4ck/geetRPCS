@@ -103,10 +103,7 @@ namespace geetRPCS.Services
                 if (File.Exists(SettingsPath))
                 {
                     string json = File.ReadAllText(SettingsPath);
-                    _settings = JsonSerializer.Deserialize<AppSettings>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    }) ?? new AppSettings();
+                    _settings = JsonSerializer.Deserialize(json, Utils.JsonContext.Default.AppSettings) ?? new AppSettings();
                 }
                 else
                 {
@@ -126,8 +123,7 @@ namespace geetRPCS.Services
                 string json;
                 lock (_lock)
                 {
-                    var options = new JsonSerializerOptions { WriteIndented = true };
-                    json = JsonSerializer.Serialize(_settings, options);
+                    json = JsonSerializer.Serialize(_settings, Utils.JsonContext.Default.AppSettings);
                 }
                 await _fileLock.WaitAsync().ConfigureAwait(false);
                 try

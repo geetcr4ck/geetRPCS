@@ -19,6 +19,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using geetRPCS.Models;
 
 namespace geetRPCS.Services
 {
@@ -131,7 +132,6 @@ namespace geetRPCS.Services
 
         private static (string processName, IntPtr hWnd, string title) GetCurrentApp()
         {
-
             IntPtr foregroundHwnd = GetForegroundWindow();
             if (foregroundHwnd != IntPtr.Zero)
             {
@@ -142,20 +142,59 @@ namespace geetRPCS.Services
                     {
                         using var p = Process.GetProcessById((int)pid);
                         string procName = p.ProcessName;
+                        string title = GetWindowTitle(foregroundHwnd);
 
-                        if (AppConfigManager.ProcessNames.Contains(procName))
+                        // 1. Check Exact Matches
+                        var exactMatches = AppConfigManager.Apps.Where(a => 
+                            AppConfigManager.ExactProcessNames.Contains(procName) &&
+                            a.Process != null && 
+                            a.Process.Equals(procName, StringComparison.OrdinalIgnoreCase)).ToList();
+
+                        // 2. Check Advanced Matches
+                        var advancedMatches = AppConfigManager.AdvancedProcessApps.Where(a => 
                         {
-                            string title = GetWindowTitle(foregroundHwnd);
-                            var apps = AppConfigManager.Apps;
-                            var matchingConfigs = apps.Where(a => a.Process != null && a.Process.Equals(procName, StringComparison.OrdinalIgnoreCase)).ToList();
+                            if (string.IsNullOrEmpty(a.ProcessMatchMode) || string.IsNullOrEmpty(a.Process)) return false;
+                            
+                            string mode = a.ProcessMatchMode.ToLower();
+                            if (mode == "regex" && a.ProcessRegex != null)
+                                return a.ProcessRegex.IsMatch(procName);
+                            if (mode == "contains")
+                                return procName.IndexOf(a.Process, StringComparison.OrdinalIgnoreCase) >= 0;
+                            if (mode == "startswith")
+                                return procName.StartsWith(a.Process, StringComparison.OrdinalIgnoreCase);
+                            if (mode == "endswith")
+                                return procName.EndsWith(a.Process, StringComparison.OrdinalIgnoreCase);
+                            
+                            return false;
+                        }).ToList();
 
-                            var titleMatch = matchingConfigs.FirstOrDefault(a =>
-                                !string.IsNullOrEmpty(a.WindowTitle) &&
-                                title.IndexOf(a.WindowTitle, StringComparison.OrdinalIgnoreCase) >= 0);
+                        var allMatches = exactMatches.Concat(advancedMatches).ToList();
+
+                        if (allMatches.Count > 0)
+                        {
+                            // Try to find a match based on Window Title rules
+                            var titleMatch = allMatches.FirstOrDefault(a => 
+                            {
+                                if (string.IsNullOrEmpty(a.WindowTitle)) return false;
+
+                                string mode = a.TitleMatchMode?.ToLower() ?? "contains"; // Default is contains
+                                
+                                if (mode == "exact")
+                                    return title.Equals(a.WindowTitle, StringComparison.OrdinalIgnoreCase);
+                                if (mode == "regex" && a.TitleRegex != null)
+                                    return a.TitleRegex.IsMatch(title);
+                                if (mode == "startswith")
+                                    return title.StartsWith(a.WindowTitle, StringComparison.OrdinalIgnoreCase);
+                                if (mode == "endswith")
+                                    return title.EndsWith(a.WindowTitle, StringComparison.OrdinalIgnoreCase);
+                                
+                                // default: contains
+                                return title.IndexOf(a.WindowTitle, StringComparison.OrdinalIgnoreCase) >= 0;
+                            });
 
                             if (titleMatch != null) return (procName, foregroundHwnd, title);
 
-                            var defaultMatch = matchingConfigs.FirstOrDefault(a => string.IsNullOrEmpty(a.WindowTitle));
+                            var defaultMatch = allMatches.FirstOrDefault(a => string.IsNullOrEmpty(a.WindowTitle));
                             if (defaultMatch != null) return (procName, foregroundHwnd, title);
                         }
                     }

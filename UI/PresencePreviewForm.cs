@@ -22,6 +22,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using DiscordRPC;
+using geetRPCS.Models;
 using geetRPCS.Services;
 
 namespace geetRPCS.UI
@@ -424,7 +425,7 @@ namespace geetRPCS.UI
                     if (cacheAge.TotalHours < 24)
                     {
                         string cachedJson = await File.ReadAllTextAsync(cacheFile);
-                        var cachedData = JsonSerializer.Deserialize<Dictionary<string, string>>(cachedJson);
+                        var cachedData = JsonSerializer.Deserialize(cachedJson, Utils.JsonContext.Default.DictionaryStringString);
                         if (cachedData != null && cachedData.Count > 0)
                         {
                             _assetIdCache = cachedData;
@@ -446,8 +447,7 @@ namespace geetRPCS.UI
                 string json = await response.Content.ReadAsStringAsync();
                 if (response.IsSuccessStatusCode)
                 {
-                    var assets = JsonSerializer.Deserialize<List<DiscordAsset>>(json,
-                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var assets = JsonSerializer.Deserialize(json, Utils.JsonContext.Default.ListDiscordAsset);
                     if (assets == null || assets.Count == 0)
                     {
                         UpdateCdnStatus(LanguageManager.Current.PreviewStatusNoAssets ?? "⚠️ No assets found", DiscordYellow);
@@ -468,7 +468,7 @@ namespace geetRPCS.UI
                         _assetsLoaded = true;
                         try
                         {
-                            string cacheJson = JsonSerializer.Serialize(_assetIdCache);
+                            string cacheJson = JsonSerializer.Serialize(_assetIdCache, Utils.JsonContext.Default.DictionaryStringString);
                             await File.WriteAllTextAsync(cacheFile, cacheJson);
                         }
                         catch { }
@@ -929,16 +929,6 @@ namespace geetRPCS.UI
             _httpClient?.Dispose();
         }
         #endregion
-        #region ----- Discord Asset Model -----
-        private class DiscordAsset
-        {
-            [System.Text.Json.Serialization.JsonPropertyName("id")]
-            public string Id { get; set; }
-            [System.Text.Json.Serialization.JsonPropertyName("name")]
-            public string Name { get; set; }
-            [System.Text.Json.Serialization.JsonPropertyName("type")]
-            public int Type { get; set; }
-        }
-        #endregion
+
     }
 }

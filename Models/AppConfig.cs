@@ -44,16 +44,24 @@ namespace geetRPCS.Models
         public List<AppButtonConfig> Buttons { get; set; }
         [JsonPropertyName("wittyTexts")]
         public List<string> WittyTexts { get; set; }
+
+        [JsonPropertyName("processMatchMode")]
+        public string ProcessMatchMode { get; set; }
+
+        [JsonPropertyName("titleMatchMode")]
+        public string TitleMatchMode { get; set; }
+
+        [JsonIgnore]
+        public System.Text.RegularExpressions.Regex ProcessRegex { get; set; }
+
+        [JsonIgnore]
+        public System.Text.RegularExpressions.Regex TitleRegex { get; set; }
         public static List<AppConfig> Load(string path)
         {
             try
             {
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                };
                 string json = File.ReadAllText(path);
-                return JsonSerializer.Deserialize<List<AppConfig>>(json, options);
+                return JsonSerializer.Deserialize(json, Utils.JsonContext.Default.ListAppConfig);
             }
             catch (Exception ex)
             {

@@ -47,10 +47,7 @@ namespace geetRPCS.Services
                 {
                     LogService.Debug($"Loading witty.json from: {WittyPath}", "NarrativeService");
                     string json = File.ReadAllText(WittyPath);
-                    var loaded = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    var loaded = JsonSerializer.Deserialize(json, Utils.JsonContext.Default.DictionaryStringJsonElement);
                     _wittyTexts = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
                     if (loaded != null)
                     {
