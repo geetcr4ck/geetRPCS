@@ -39,7 +39,7 @@
   "msg_app_id_changed": "Applicatie-ID succesvol gewijzigd!\n\nHerstart de applicatie als de status niet wordt bijgewerkt.",
   "error_save_config": "Kon configuratie niet opslaan.",
   "link_tutorial": "📖 Handleiding lezen",
-  "url_tutorial": "https://github.com/makcrtve/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
+  "url_tutorial": "https://github.com/geetcr4ck/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
   "link_download_assets": "⬇️ Asset Pack downloaden (Vereist)",
   "btn_save": "Opslaan",
   "msg_presence_paused": "Rich Presence gepauzeerd. Discord toont geen activiteit.",

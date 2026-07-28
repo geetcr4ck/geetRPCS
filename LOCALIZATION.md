@@ -49,4 +49,4 @@ Make sure your JSON is valid! You can use online validators like [jsonlint.com](
 
 ## Need Help?
 
-If you're unsure about the context of a string, feel free to ask in the [Discussions](https://github.com/makcrtve/geetRPCS/discussions).
+If you're unsure about the context of a string, feel free to ask in the [Discussions](https://github.com/geetcr4ck/geetRPCS/discussions).

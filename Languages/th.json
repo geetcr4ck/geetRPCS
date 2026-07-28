@@ -39,7 +39,7 @@
   "msg_app_id_changed": "เปลี่ยนรหัสแอพสำเร็จ!\n\nกรุณารีสตาร์ทแอพพลิเคชั่นหากสถานะไม่อัปเดต",
   "error_save_config": "บันทึกการตั้งค่าไม่สำเร็จ",
   "link_tutorial": "📖 อ่านคู่มือ",
-  "url_tutorial": "https://github.com/makcrtve/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
+  "url_tutorial": "https://github.com/geetcr4ck/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
   "link_download_assets": "⬇️ ดาวน์โหลดแพ็คสินทรัพย์ (จำเป็น)",
   "btn_save": "บันทึก",
   "msg_presence_paused": "Rich Presence หยุดชั่วคราว Discord จะไม่แสดงกิจกรรมใดๆ",

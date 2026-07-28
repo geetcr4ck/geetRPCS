@@ -4,7 +4,7 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/makcrtve/geetRPCS/main/assets/geetrpcs-banner.webp" width="100%" alt="geetRPCS Banner"/>
+  <img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/geetrpcs-banner.webp" width="100%" alt="geetRPCS Banner"/>
 </p>
 
 <h1 align="center">geetRPCS</h1>
@@ -15,9 +15,9 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/v/release/makcrtve/geetRPCS?style=flat&label=Version&color=success" alt="Version"/>
-  <img src="https://img.shields.io/github/downloads/makcrtve/geetRPCS/total?style=flat&label=Downloads&color=blue" alt="Downloads"/>
-  <img src="https://komarev.com/ghpvc/?username=makcrtve&color=blue&style=flat&label=Views" alt="Visitor Count"/>
+  <img src="https://img.shields.io/github/v/release/geetcr4ck/geetRPCS?style=flat&label=Version&color=success" alt="Version"/>
+  <img src="https://img.shields.io/github/downloads/geetcr4ck/geetRPCS/total?style=flat&label=Downloads&color=blue" alt="Downloads"/>
+  <img src="https://komarev.com/ghpvc/?username=geetcr4ck&color=blue&style=flat&label=Views" alt="Visitor Count"/>
   <a href="https://www.producthunt.com/products/geetrpcs?embed=true&utm_source=embed&utm_medium=post_embed">
     <img src="https://img.shields.io/badge/Product_Hunt-Check_it_out-flat?logo=product-hunt&color=EA532B" alt="Product Hunt"/>
   </a>
@@ -28,7 +28,7 @@
   </a>
   <img src="https://img.shields.io/badge/.NET_8.0-512BD4?style=flat&logo=dotnet&logoColor=white" alt=".NET 8"/>
   <img src="https://img.shields.io/badge/Windows-0078D6?style=flat&logo=windows&logoColor=white" alt="Windows"/>
-  <a href="https://zread.ai/makcrtve/geetRPCS">
+  <a href="https://zread.ai/geetcr4ck/geetRPCS">
     <img src="https://img.shields.io/badge/Ask_Zread-_.svg?style=flat&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDRLjk2MTU2QzUuMzE1MDIgNS42MDAxIDUuNjAxNTYgNS4zMTM1NiA1LjYwMTU2IDQuOTYxMDFWMi4yNDAxQzUuNjAxNTYgMS44ODY2NCA1LjMxNTAyIDEuNjAwMSA0Ljk2MTU2IDEuNjAwMVoiIGZpbGw9IiNmZmYiLz4KPHBhdGggZD0iTTRLjk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0LjYxNTZDNS4zMTUwMiAxNC4zOTk5IDUuNjAxNTYgMTQuMTEzNCA1LjYwMTU2IDEzLjc1OTlWMTEuMDM5OUM1LjYwMTU2IDEwLjY4NjQgNS4zMTM1MiAxMC4zOTk5IDQuOTYxNTYgMTAuMzk5OVoiIGZpbGw9IiNmZmYiLz4KPHBhdGggZD0iTTEzLjc1ODQgMS42MDAxSDExLjAzODRDMTAuNjg1IDEuNjAwMSAxMC4zOTg0IDEuODg2NjQgMTAuMzk4NCAyLjI0MDFWNC45NjAxQzEwLjM5ODQgNS4zMTM1NiAxMC42ODUgNS42MDAxIDExLjAzODQgNS42MDAxSDEzLjc1ODRDMTQuMTExOSA1LjYwMDEgMTQuMzk4NCA1LjMxMzU2IDE0LjM5OTkgNC45NjAxVjIuMjQwMUMxNC4zOTg0IDEuODg2NjQgMTQuMTExOSAxLjYwMDEgMTMuNzU4NCAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDRMNCAxMlpFIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff" alt="zread"/>
   </a>
 </p>
@@ -105,7 +105,7 @@ irm https://bit.ly/geetrpcs-del | iex; Uninstall-GeetRPCS -Silent -KeepUserData
 
 #### Manual Download (Zip)
 
-1. Download the latest `.zip` from **[Releases](https://github.com/makcrtve/geetRPCS/releases/latest)**
+1. Download the latest `.zip` from **[Releases](https://github.com/geetcr4ck/geetRPCS/releases/latest)**
 2. Extract to your preferred folder
 3. Run `geetRPCS.exe`
 
@@ -125,7 +125,7 @@ Requirements:
 ### 1. Clone the repository
 
 ```powershell
-git clone https://github.com/makcrtve/geetRPCS.git
+git clone https://github.com/geetcr4ck/geetRPCS.git
 cd geetRPCS
 ```
 
@@ -362,16 +362,16 @@ Control geetRPCS directly from your keyboard, even when the app is minimized:
 <summary><b>📸 Screenshots</b></summary>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/makcrtve/geetRPCS/main/assets/screenshot-1.png" width="280"/>
+  <img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-1.png" width="280"/>
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/makcrtve/geetRPCS/main/assets/screenshot-2.png" width="280"/>
+  <img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-2.png" width="280"/>
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/makcrtve/geetRPCS/main/assets/screenshot-3.png" width="280"/>
+  <img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-3.png" width="280"/>
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/makcrtve/geetRPCS/main/assets/screenshot-4.png" width="280"/>
+  <img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-4.png" width="280"/>
 </p>
 
 </details>
@@ -446,7 +446,7 @@ You can now assign **different Discord App IDs for specific applications** witho
       "SmallImageText": "Powered by geetRPCS"
     },
     "Buttons": [
-      { "Label": "GitHub", "Url": "https://github.com/makcrtve/geetRPCS" }
+      { "Label": "GitHub", "Url": "https://github.com/geetcr4ck/geetRPCS" }
     ]
   }
 }
@@ -508,7 +508,7 @@ geetRPCS validates button URLs automatically:
 3. Upload images with names matching `largeKey` / `smallKey`
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/makcrtve/geetRPCS/main/assets/discord-assets.png" width="500"/>
+  <img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/discord-assets.png" width="500"/>
 </p>
 
 </details>
@@ -646,14 +646,14 @@ If you see a red warning on VirusTotal or Windows Defender:
 ## 📞 Links
 
 <p align="center">
-  <a href="https://github.com/makcrtve/geetRPCS/issues">🐛 Report Bug</a> •
-  <a href="https://github.com/makcrtve/geetRPCS/discussions">💬 Discussions</a> •
-  <a href="https://github.com/makcrtve/geetRPCS/releases">📦 Releases</a>
+  <a href="https://github.com/geetcr4ck/geetRPCS/issues">🐛 Report Bug</a> •
+  <a href="https://github.com/geetcr4ck/geetRPCS/discussions">💬 Discussions</a> •
+  <a href="https://github.com/geetcr4ck/geetRPCS/releases">📦 Releases</a>
 </p>
 
 ---
 
 <p align="center">
-  <sub>Made with ❤️ by <a href="https://github.com/makcrtve">makcrtve</a></sub><br/>
+  <sub>Made with ❤️ by <a href="https://github.com/geetcr4ck">geetcr4ck</a></sub><br/>
   <sub>geetRPCS v1.3.9 • Apache 2.0 License • 2026</sub>
 </p>

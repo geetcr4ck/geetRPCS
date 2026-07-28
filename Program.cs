@@ -3,7 +3,7 @@
  * Discord Rich Presence Custom Switcher main logic
  */
 /*
- * Copyright (c) 2026 makcrtve
+ * Copyright (c) 2026 geetcr4ck
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1268,7 +1268,7 @@ class Program : ApplicationContext
     private string ShowInputDialog(string text, string caption, string defaultValue = "")
     {
         string tutorialUrl = LanguageManager.Current.UrlTutorial;
-        string assetsUrl = "https://github.com/makcrtve/geetRPCS/raw/main/AssetPack.zip";
+        string assetsUrl = "https://github.com/geetcr4ck/geetRPCS/raw/main/AssetPack.zip";
         string defaultAppId = "1433700335863726183";
         using Form prompt = new Form()
         {

@@ -39,7 +39,7 @@
   "msg_app_id_changed": "Ang App ID ay matagumpay na napalitan!\n\nMangyaring i-restart ang application kung hindi nagbago ang status.",
   "error_save_config": "Nabigong i-save ang configuration.",
   "link_tutorial": "📖 Basahin ang Tutorial",
-  "url_tutorial": "https://github.com/makcrtve/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
+  "url_tutorial": "https://github.com/geetcr4ck/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
   "link_download_assets": "⬇️ I-download ang Asset Pack (Kailangan)",
   "btn_save": "I-save",
   "msg_presence_paused": "Naka-pause ang Rich Presence. Walang ipapakitang aktibidad ang Discord.",

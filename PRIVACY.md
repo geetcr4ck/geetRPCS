@@ -50,4 +50,4 @@ We may update this policy as the application evolves. Significant changes will b
 
 ## 5. Contact
 
-If you have questions about this Privacy Policy, please open an issue on our [GitHub Repository](https://github.com/makcrtve/geetRPCS).
+If you have questions about this Privacy Policy, please open an issue on our [GitHub Repository](https://github.com/geetcr4ck/geetRPCS).

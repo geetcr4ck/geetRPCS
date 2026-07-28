@@ -39,7 +39,7 @@
   "msg_app_id_changed": "ID Aplikasi kasil diganti!\n\nMonggo miwiti maneh aplikasi yen status ora dianyari.",
   "error_save_config": "Gagal nyimpen konfigurasi.",
   "link_tutorial": "📖 Waca Tutorial",
-  "url_tutorial": "https://github.com/makcrtve/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
+  "url_tutorial": "https://github.com/geetcr4ck/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
   "link_download_assets": "⬇️ Unduh Paket Aset (Wajib)",
   "btn_save": "Simpen",
   "msg_presence_paused": "Rich Presence dingasoake. Discord ora bakal nampilake aktivitas apa wae.",

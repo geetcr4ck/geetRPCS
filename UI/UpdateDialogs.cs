@@ -3,7 +3,7 @@
  * UI dialogs for application update notifications
  */
 /*
- * Copyright (c) 2026 makcrtve
+ * Copyright (c) 2026 geetcr4ck
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ namespace geetRPCS.UI
         {
             string latestVersion = release.TagName?.TrimStart('v') ?? "Unknown";
             string releaseNotes = release.Body ?? "No release notes available.";
-            string downloadUrl = release.HtmlUrl ?? "https://github.com/makcrtve/geetRPCS/releases";
+            string downloadUrl = release.HtmlUrl ?? "https://github.com/geetcr4ck/geetRPCS/releases";
             DateTime publishedDate = release.PublishedAt;
 
             using var dialog = CreateBaseDialog(Services.LanguageManager.Current.UpdateAvailableTitle, new Size(550, 750));

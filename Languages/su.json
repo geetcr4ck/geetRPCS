@@ -39,7 +39,7 @@
   "msg_app_id_changed": "ID Aplikasi parantos diganti!\n\nManga mimitian deui aplikasi upami status teu dianyari.",
   "error_save_config": "Gagal nyimpen konfigurasi.",
   "link_tutorial": "📖 Baca Tutorial",
-  "url_tutorial": "https://github.com/makcrtve/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
+  "url_tutorial": "https://github.com/geetcr4ck/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
   "link_download_assets": "⬇️ Unduh Paket Aset (Wajib)",
   "btn_save": "Simpen",
   "msg_presence_paused": "Rich Presence dijeda. Discord moal nampilkeun aktivitas naon wae.",

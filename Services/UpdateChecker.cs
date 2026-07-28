@@ -3,7 +3,7 @@
  * Checks for application and apps.json updates
  */
 /*
- * Copyright (c) 2026 makcrtve
+ * Copyright (c) 2026 geetcr4ck
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,9 @@ namespace geetRPCS.Services
     internal static class UpdateChecker
     {
         // --- Configuration ---
-        private const string GITHUB_API_URL = "https://api.github.com/repos/makcrtve/geetRPCS/releases/latest";
-        private const string APPS_RAW_URL = "https://raw.githubusercontent.com/makcrtve/geetRPCS/main/apps.json";
-        private const string WITTY_RAW_URL = "https://raw.githubusercontent.com/makcrtve/geetRPCS/main/witty.json";
+        private const string GITHUB_API_URL = "https://api.github.com/repos/geetcr4ck/geetRPCS/releases/latest";
+        private const string APPS_RAW_URL = "https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/apps.json";
+        private const string WITTY_RAW_URL = "https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/witty.json";
         private static string CURRENT_VERSION => System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.0.0";
         private static readonly string AppFolder = AppDomain.CurrentDomain.BaseDirectory;
         private static readonly string AppsPath = Path.Combine(AppFolder, "apps.json");

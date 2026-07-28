@@ -39,7 +39,7 @@
   "msg_app_id_changed": "ID приложения успешно изменен!\n\nПожалуйста, перезапустите приложение, если статус не обновился.",
   "error_save_config": "Не удалось сохранить конфигурацию.",
   "link_tutorial": "📖 Читать руководство",
-  "url_tutorial": "https://github.com/makcrtve/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
+  "url_tutorial": "https://github.com/geetcr4ck/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
   "link_download_assets": "⬇️ Скачать набор ресурсов (Обязательно)",
   "btn_save": "Сохранить",
   "msg_presence_paused": "Rich Presence приостановлен. Discord не будет показывать активность.",

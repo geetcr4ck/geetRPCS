@@ -3,7 +3,7 @@
  * Manages image assets for Rich Presence
  */
 /*
- * Copyright (c) 2026 makcrtve
+ * Copyright (c) 2026 geetcr4ck
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

@@ -39,7 +39,7 @@
   "msg_app_id_changed": "एप्लीकेशन आईडी सफलतापूर्वक बदल दी गई!\n\nयदि स्थिति अपडेट नहीं होती है तो कृपया एप्लिकेशन को पुनरारंभ करें।",
   "error_save_config": "कॉन्फ़िगरेशन सहेजने में विफल।",
   "link_tutorial": "📖 ट्यूटोरियल पढ़ें",
-  "url_tutorial": "https://github.com/makcrtve/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
+  "url_tutorial": "https://github.com/geetcr4ck/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
   "link_download_assets": "⬇️ एसेट पैक डाउनलोड करें (आवश्यक)",
   "btn_save": "सहेजें",
   "msg_presence_paused": "Rich Presence रोका गया। Discord कोई गतिविधि नहीं दिखाएगा।",

@@ -16,7 +16,7 @@ function Install-GeetRPCS {
         [switch]$Silent
     )
 
-    $repo = "makcrtve/geetRPCS"
+    $repo = "geetcr4ck/geetRPCS"
     $installDir = "$env:LOCALAPPDATA\geetRPCS"
     $exeName = "geetRPCS.exe"
     $versionFile = Join-Path $installDir ".version"

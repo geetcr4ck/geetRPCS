@@ -39,7 +39,7 @@
   "msg_app_id_changed": "アプリケーションIDが正常に変更されました！\n\nステータスが更新されない場合は、アプリケーションを再起動してください。",
   "error_save_config": "設定の保存に失敗しました。",
   "link_tutorial": "📖 チュートリアルを読む",
-  "url_tutorial": "https://github.com/makcrtve/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
+  "url_tutorial": "https://github.com/geetcr4ck/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
   "link_download_assets": "⬇️ アセットパックをダウンロード (必須)",
   "btn_save": "保存",
   "msg_presence_paused": "Rich Presence は一時停止中です。Discord にはアクティビティが表示されません。",

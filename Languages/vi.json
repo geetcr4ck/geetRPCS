@@ -39,7 +39,7 @@
   "msg_app_id_changed": "ID Ứng dụng đã được thay đổi thành công!\n\nVui lòng khởi động lại ứng dụng nếu trạng thái không cập nhật.",
   "error_save_config": "Không thể lưu cấu hình.",
   "link_tutorial": "📖 Đọc Hướng dẫn",
-  "url_tutorial": "https://github.com/makcrtve/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
+  "url_tutorial": "https://github.com/geetcr4ck/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
   "link_download_assets": "⬇️ Tải xuống Gói Tài sản (Bắt buộc)",
   "btn_save": "Lưu",
   "msg_presence_paused": "Rich Presence đã tạm dừng. Discord sẽ không hiển thị bất kỳ hoạt động nào.",

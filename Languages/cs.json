@@ -39,7 +39,7 @@
   "msg_app_id_changed": "ID aplikace úspěšně změněno!\n\nPokud se stav neaktualizuje, restartujte aplikaci.",
   "error_save_config": "Nepodařilo se uložit konfiguraci.",
   "link_tutorial": "📖 Přečíst návod",
-  "url_tutorial": "https://github.com/makcrtve/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
+  "url_tutorial": "https://github.com/geetcr4ck/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
   "link_download_assets": "⬇️ Stáhnout balíček prostředků (Vyžadováno)",
   "btn_save": "Uložit",
   "msg_presence_paused": "Rich Presence pozastaveno. Discord nezobrazí žádnou aktivitu.",

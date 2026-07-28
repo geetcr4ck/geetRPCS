@@ -39,7 +39,7 @@
   "msg_app_id_changed": "Application ID changed successfully!\n\nPlease restart the application if the status does not update.",
   "error_save_config": "Failed to save configuration.",
   "link_tutorial": "📖 Read Tutorial",
-  "url_tutorial": "https://github.com/makcrtve/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
+  "url_tutorial": "https://github.com/geetcr4ck/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
   "link_download_assets": "⬇️ Download Asset Pack (Required)",
   "btn_save": "Save",
   "msg_presence_paused": "Rich Presence paused. Discord won't show any activity.",

@@ -13,7 +13,7 @@ We love pull requests from everyone. By participating in this project, you agree
 1.  **Fork the repository** on GitHub.
 2.  **Clone your fork** locally:
     ```bash
-    git clone https://github.com/makcrtve/geetRPCS.git
+    git clone https://github.com/geetcr4ck/geetRPCS.git
     cd geetRPCS
     ```
 3.  **Install .NET 8.0 SDK** if you haven't already.

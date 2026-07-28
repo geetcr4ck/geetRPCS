@@ -39,7 +39,7 @@
   "msg_app_id_changed": "Uygulama Kimliği başarıyla değiştirildi!\n\nDurum güncellenmezse lütfen uygulamayı yeniden başlatın.",
   "error_save_config": "Yapılandırma kaydedilemedi.",
   "link_tutorial": "📖 Öğreticiyi Oku",
-  "url_tutorial": "https://github.com/makcrtve/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
+  "url_tutorial": "https://github.com/geetcr4ck/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
   "link_download_assets": "⬇️ Varlık Paketini İndir (Gerekli)",
   "btn_save": "Kaydet",
   "msg_presence_paused": "Zengin Durum duraklatıldı. Discord hiçbir aktivite göstermeyecek.",

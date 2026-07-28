@@ -39,7 +39,7 @@
   "msg_app_id_changed": "ID Applicazione cambiato con successo!\n\nRiavvia l'applicazione se lo stato non si aggiorna.",
   "error_save_config": "Salvataggio configurazione fallito.",
   "link_tutorial": "📖 Leggi Tutorial",
-  "url_tutorial": "https://github.com/makcrtve/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
+  "url_tutorial": "https://github.com/geetcr4ck/geetRPCS/blob/main/docs/CUSTOM_APP_ID.md",
   "link_download_assets": "⬇️ Scarica Pacchetto Asset (Richiesto)",
   "btn_save": "Salva",
   "msg_presence_paused": "Rich Presence in pausa. Discord non mostrerà alcuna attività.",
