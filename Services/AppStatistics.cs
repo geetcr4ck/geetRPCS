@@ -24,8 +24,8 @@ namespace geetRPCS.Services
 {
     internal class AppStatistics
     {
-        private static readonly string AppFolder = AppDomain.CurrentDomain.BaseDirectory;
-        private static readonly string StatsPath = Path.Combine(AppFolder, "statistics.json");
+        private static readonly string AppFolder = Utils.AppPaths.UserDataDir;
+        private static readonly string StatsPath = Utils.AppPaths.StatisticsPath;
 
         private static readonly JsonSerializerOptions _readOptions = new()
         {

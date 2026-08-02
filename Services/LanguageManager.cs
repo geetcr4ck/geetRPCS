@@ -1,6 +1,14 @@
 /**
  * geetRPCS - Language Manager
- * Manages application-wide language and localization
+ * Manages application-wide language and localization.
+ *
+ * Localization strategy:
+ *  - The list of available languages is discovered by scanning the Languages/
+ *    folder instead of being hard-coded, so new .json files are picked up
+ *    automatically.
+ *  - Missing / null translations automatically fall back to the English key,
+ *    centralizing the fallback logic here instead of sprinkling `?? "..."`
+ *    defaults across the UI code.
  */
 /*
  * Copyright (c) 2026 geetcr4ck
@@ -15,7 +23,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using geetRPCS.Models;
@@ -24,13 +34,16 @@ namespace geetRPCS.Services
 {
     internal static class LanguageManager
     {
-        private static readonly string AppFolder = AppDomain.CurrentDomain.BaseDirectory;
-        private static readonly string LanguagesFolder = Path.Combine(AppFolder, "Languages");
-        private static readonly string SettingsPath = Path.Combine(AppFolder, "settings.json");
+        private static readonly string AppFolder = Utils.AppPaths.InstallDir;
+        private static readonly string LanguagesFolder = Utils.AppPaths.LanguagesDir;
+        private static readonly string SettingsPath = Utils.AppPaths.SettingsPath;
+
+        private static readonly string FallbackCode = "en";
+        private static JsonObject _englishNode; // Cached English base used for the fallback merge
 
         private static Language _currentLanguage;
         private static string _currentLanguageCode = "en";
-        public static Language Current => _currentLanguage ?? LoadLanguage("en");
+        public static Language Current => _currentLanguage ?? LoadLanguage(_currentLanguageCode);
         static LanguageManager()
         {
             EnsureLanguagesFolder();
@@ -103,17 +116,25 @@ namespace geetRPCS.Services
                     Log($"Language file not found: {Path.GetFileName(path)}", "WARNING");
 
                     // Fallback to English if the requested language is not English
-                    if (languageCode != "en")
+                    if (languageCode != FallbackCode)
                     {
                          Log("Attempting fallback to English...", "INFO");
-                         return LoadLanguage("en");
+                         return LoadLanguage(FallbackCode);
                     }
 
                     return new Language(); // Last resort: empty language
                 }
 
                 string json = File.ReadAllText(path);
-                var language = JsonSerializer.Deserialize(json, Utils.JsonContext.Default.Language);
+                var merged = MergeLanguage(json);
+                if (merged == null)
+                {
+                    Log($"Failed to deserialize language: {languageCode}", "WARNING");
+                    if (languageCode != FallbackCode) return LoadLanguage(FallbackCode);
+                    return new Language();
+                }
+
+                var language = JsonSerializer.Deserialize(merged, Utils.JsonContext.Default.Language);
                 Log($"Loaded language: {languageCode}", "INFO");
                 return language ?? new Language();
             }
@@ -122,44 +143,118 @@ namespace geetRPCS.Services
                 Log($"Failed to load language {languageCode}: {ex.Message}", "ERROR");
 
                 // Fallback to English if failure wasn't for English
-                if (languageCode != "en")
+                if (languageCode != FallbackCode)
                 {
-                     return LoadLanguage("en");
+                     return LoadLanguage(FallbackCode);
                 }
 
                 return new Language();
             }
         }
+
+        /// <summary>
+        /// Merges the translation file on top of the English file, filling any
+        /// missing or null key with the English value. This is the single source
+        /// of fallback translations for the whole app.
+        /// </summary>
+        private static string MergeLanguage(string languageJson)
+        {
+            var englishNode = GetEnglishNode();
+            var node = JsonNode.Parse(languageJson?.Trim() ?? "{}");
+            if (node is JsonObject obj && englishNode != null)
+            {
+                foreach (var kvp in englishNode)
+                {
+                    if (obj.TryGetPropertyValue(kvp.Key, out var value) &&
+                        value != null && value.GetValueKind() != JsonValueKind.Null)
+                        continue;
+                    obj[kvp.Key] = kvp.Value?.DeepClone();
+                }
+            }
+            return node?.ToJsonString() ?? "{}";
+        }
+
+        private static JsonObject GetEnglishNode()
+        {
+            if (_englishNode != null) return _englishNode;
+            try
+            {
+                string enPath = Path.Combine(LanguagesFolder, $"{FallbackCode}.json");
+                if (File.Exists(enPath))
+                    _englishNode = JsonNode.Parse(File.ReadAllText(enPath)) as JsonObject;
+            }
+            catch (Exception ex)
+            {
+                Log($"Failed to load English fallback node: {ex.Message}", "ERROR");
+            }
+            return _englishNode;
+        }
+
+        /// <summary>
+        /// Discovers the available languages by scanning the Languages folder.
+        /// The friendly (document) name is supplied by a curated table; languages
+        /// not present in the table fall back to their code/name.
+        /// </summary>
         public static List<LanguageInfo> GetAvailableLanguages()
         {
-            var languages = new List<LanguageInfo>
+            var languages = new List<LanguageInfo>();
+            try
             {
-                new LanguageInfo { Code = "en", Name = "English" },
-                new LanguageInfo { Code = "id", Name = "Indonesian (Bahasa Indonesia)" },
-                new LanguageInfo { Code = "ru", Name = "Russian (Русский)" },
-                new LanguageInfo { Code = "es", Name = "Spanish (Español)" },
-                new LanguageInfo { Code = "de", Name = "German (Deutsch)" },
-                new LanguageInfo { Code = "zh-CN", Name = "Chinese (简体中文)" },
-                new LanguageInfo { Code = "cs", Name = "Czech (Čeština)" },
-                new LanguageInfo { Code = "nl", Name = "Dutch (Nederlands)" },
-                new LanguageInfo { Code = "fr", Name = "French (Français)" },
-                new LanguageInfo { Code = "hi", Name = "Hindi (हिन्दी)" },
-                new LanguageInfo { Code = "it", Name = "Italian (Italiano)" },
-                new LanguageInfo { Code = "ja", Name = "Japanese (日本語)" },
-                new LanguageInfo { Code = "jv", Name = "Javanese (Basa Jawa)" },
-                new LanguageInfo { Code = "ko", Name = "Korean (한국어)" },
-                new LanguageInfo { Code = "ms", Name = "Malay (Bahasa Melayu)" },
-                new LanguageInfo { Code = "fa", Name = "Persian (فارسی)" },
-                new LanguageInfo { Code = "pt", Name = "Portuguese (Português)" },
-                new LanguageInfo { Code = "su", Name = "Sundanese (Basa Sunda)" },
-                new LanguageInfo { Code = "sv", Name = "Swedish (Svenska)" },
-                new LanguageInfo { Code = "tl", Name = "Tagalog (Tagalog)" },
-                new LanguageInfo { Code = "th", Name = "Thai (ไทย)" },
-                new LanguageInfo { Code = "tr", Name = "Turkish (Türkçe)" },
-                new LanguageInfo { Code = "vi", Name = "Vietnamese (Tiếng Việt)" }
-            };
-            return languages;
+                if (Directory.Exists(LanguagesFolder))
+                {
+                    foreach (var file in Directory.EnumerateFiles(LanguagesFolder, "*.json"))
+                    {
+                        string code = Path.GetFileNameWithoutExtension(file);
+                        if (string.IsNullOrWhiteSpace(code) || code.Equals("template", StringComparison.OrdinalIgnoreCase))
+                            continue;
+                        languages.Add(new LanguageInfo { Code = code, Name = DisplayNames.TryGetValue(code, out var name) ? name : code });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"Failed to scan language folder: {ex.Message}", "WARNING");
+            }
+
+            // Guarantee English is always present even if the folder is missing/empty.
+            if (languages.All(l => !string.Equals(l.Code, FallbackCode, StringComparison.OrdinalIgnoreCase)))
+            {
+                languages.Insert(0, new LanguageInfo { Code = FallbackCode, Name = DisplayNames[FallbackCode] });
+                if (!Directory.Exists(LanguagesFolder))
+                    Log("Languages folder not found - defaulting to English", "WARNING");
+            }
+
+            return languages.OrderBy(l => l.Name, StringComparer.OrdinalIgnoreCase).ToList();
         }
+
+        /// <summary>Curated display names (shown in the tray language menu).</summary>
+        private static readonly Dictionary<string, string> DisplayNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["en"] = "English",
+            ["id"] = "Indonesian (Bahasa Indonesia)",
+            ["ru"] = "Russian (Русский)",
+            ["es"] = "Spanish (Español)",
+            ["de"] = "German (Deutsch)",
+            ["zh-CN"] = "Chinese (简体中文)",
+            ["cs"] = "Czech (Čeština)",
+            ["nl"] = "Dutch (Nederlands)",
+            ["fr"] = "French (Français)",
+            ["hi"] = "Hindi (हिन्दी)",
+            ["it"] = "Italian (Italiano)",
+            ["ja"] = "Japanese (日本語)",
+            ["jv"] = "Javanese (Basa Jawa)",
+            ["ko"] = "Korean (한국어)",
+            ["ms"] = "Malay (Bahasa Melayu)",
+            ["fa"] = "Persian (فارسی)",
+            ["pt"] = "Portuguese (Português)",
+            ["su"] = "Sundanese (Basa Sunda)",
+            ["sv"] = "Swedish (Svenska)",
+            ["tl"] = "Tagalog (Tagalog)",
+            ["th"] = "Thai (ไทย)",
+            ["tr"] = "Turkish (Türkçe)",
+            ["vi"] = "Vietnamese (Tiếng Việt)"
+        };
+
         private static void Log(string message, string level = "INFO")
         {
             // Delegate to centralized LogService

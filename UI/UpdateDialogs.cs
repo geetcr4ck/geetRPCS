@@ -29,7 +29,7 @@ namespace geetRPCS.UI
 {
     internal static class UpdateDialogs
     {
-        private static string CURRENT_VERSION => System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.0.0";
+        private static string CURRENT_VERSION => Utils.AppVersion.VersionText;
 
         public static void ShowEnhancedUpdateDialog(GitHubRelease release)
         {
@@ -466,7 +466,7 @@ namespace geetRPCS.UI
             };
             try
             {
-                string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rpicon.ico");
+                string iconPath = Utils.AppPaths.IconPath;
                 if (File.Exists(iconPath)) dialog.Icon = new Icon(iconPath);
             }
             catch (Exception ex) { Services.LogService.Log($"Failed to load dialog icon: {ex.Message}", "WARNING", "UpdateDialogs"); }

@@ -34,7 +34,7 @@ namespace geetRPCS.Services
         private static readonly Random _random = new Random();
         private static readonly object _lock = new object();
         private static readonly TimeSpan _rotationInterval = TimeSpan.FromSeconds(60);
-        private static readonly string WittyPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "witty.json");
+        private static readonly string WittyPath = Utils.AppPaths.WittyPath;
         static NarrativeService()
         {
             LoadWittyTexts();

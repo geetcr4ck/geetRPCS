@@ -215,6 +215,7 @@ dotnet publish -c Release -r win-x64 -p:PublishSingleFile=false -p:SelfContained
 - Custom Buttons
 - URL Validation
 - Per-App Settings
+- Per-App Timestamps
 - Flexible Presence Format
 
 </td>
@@ -439,9 +440,10 @@ You can now assign **different Discord App IDs for specific applications** witho
     "State": "Ready to work",
     "ActiveDetails": "Working on {app_name}",
     "ActiveState": "{window_title}",
+    "showTimestamps": true,
     "Assets": {
       "LargeImageKey": "geetrpcs-logo",
-      "LargeImageText": "geetRPCS v1.3.9",
+      "LargeImageText": "geetRPCS v1.4.0",
       "SmallImageKey": "verified",
       "SmallImageText": "Powered by geetRPCS"
     },
@@ -468,6 +470,7 @@ You can now assign **different Discord App IDs for specific applications** witho
     "largeText": "FL Studio 2025",
     "smallKey": "geetrpcs-logo",
     "smallText": "geetRPCS",
+    "showTimestamps": false,
     "customDetails": "Producing on {app_name}",
     "clientId": "OPTIONAL_SPECIFIC_APP_ID",
     "buttons": [{ "label": "My Portfolio", "url": "https://example.com" }]
@@ -517,18 +520,21 @@ geetRPCS validates button URLs automatically:
 <summary><b>📁 File Structure</b></summary>
 
 ```
-📁 %LOCALAPPDATA%\geetRPCS\
+📁 Install Folder (where geetRPCS.exe lives)
 ├── geetRPCS.exe          # Main application
 ├── apps.json             # Application list (required)
 ├── witty.json            # Witty texts (required)
 ├── rpicon.ico            # Icon (required)
+└── Languages/            # Language files (*.json)
+
+📁 %LOCALAPPDATA%\geetRPCS\
 ├── config.json           # Discord RPC Configuration (optional)
 ├── settings.json         # User settings (auto-managed, async)
 ├── statistics.json       # Tracking data (auto-managed, async)
 ├── geetRPCS.log          # Log file (auto-generated)
 ├── .telemetry            # Launch counter (auto-generated)
-├── ImageCache/           # Preview Image cache (auto-generated)
-└── Languages/            # Language files (auto-generated)
+├── telemetry.log         # Telemetry log (auto-generated)
+└── ImageCache/           # Preview Image cache (auto-generated)
 ```
 
 </details>
@@ -638,6 +644,7 @@ If you see a red warning on VirusTotal or Windows Defender:
 - [x] **Silent Auto-Update (v1.3.6) 🆕**
 - [x] **Shortcut Manager (v1.3.6) 🆕**
 - [x] **Network & Reliability Update (v1.3.9) 🆕**
+- [x] **Architecture Refactor Update (v1.4.0) 🆕**
 - [ ] More software support
 - [ ] UI Dashboard (WPF/WinUI)
 
@@ -655,5 +662,5 @@ If you see a red warning on VirusTotal or Windows Defender:
 
 <p align="center">
   <sub>Made with ❤️ by <a href="https://github.com/geetcr4ck">geetcr4ck</a></sub><br/>
-  <sub>geetRPCS v1.3.9 • Apache 2.0 License • 2026</sub>
+  <sub>geetRPCS v1.4.0 • Apache 2.0 License • 2026</sub>
 </p>

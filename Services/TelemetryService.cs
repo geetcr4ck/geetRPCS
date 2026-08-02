@@ -25,10 +25,10 @@ namespace geetRPCS.Services
     public static class TelemetryService
     {
         private const string TELEMETRY_URL = "https://geet-rpcs-tel.vercel.app/api/telemetry";
-        private static string APP_VERSION => System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+        private static string APP_VERSION => Utils.AppVersion.VersionText;
         private const ulong DEVELOPER_ID = 626250175857426452;
-        private static readonly string AppFolder = AppDomain.CurrentDomain.BaseDirectory;
-        private static readonly string TelemetryPath = Path.Combine(AppFolder, ".telemetry");
+        private static readonly string AppFolder = Utils.AppPaths.UserDataDir;
+        private static readonly string TelemetryPath = Utils.AppPaths.TelemetryPath;
 
         private static readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
         private static string _cachedUsername, _cachedUserId;
@@ -242,7 +242,7 @@ namespace geetRPCS.Services
             LogService.Log(message, level, "Telemetry");
             try
             {
-                string telemetryLog = Path.Combine(AppFolder, "telemetry.log");
+                string telemetryLog = Utils.AppPaths.TelemetryLogPath;
                 string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
                 File.AppendAllText(telemetryLog, $"[{timestamp}] [Telemetry] [{level}] {message}" + Environment.NewLine);
             }

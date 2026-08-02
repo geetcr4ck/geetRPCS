@@ -19,6 +19,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using geetRPCS.Models;
+using geetRPCS.Utils;
 
 namespace geetRPCS.Services
 {
@@ -29,7 +30,7 @@ namespace geetRPCS.Services
         private static List<AppConfig> _exactProcessApps;
         private static List<AppConfig> _advancedProcessApps;
         private static readonly object _lock = new object();
-        private static readonly string AppsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "apps.json");
+        private static readonly string AppsPath = AppPaths.AppsPath;
 
         public static IReadOnlyList<AppConfig> Apps
         {

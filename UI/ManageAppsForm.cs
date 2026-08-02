@@ -71,7 +71,7 @@ namespace geetRPCS.UI
             this.DoubleBuffered = true;
             try
             {
-                string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rpicon.ico");
+                string iconPath = Utils.AppPaths.IconPath;
                 if (File.Exists(iconPath)) this.Icon = new Icon(iconPath);
             }
             catch { }

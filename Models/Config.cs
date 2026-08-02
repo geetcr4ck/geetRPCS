@@ -27,6 +27,8 @@ namespace geetRPCS.Models
         public AssetConfig? Assets { get; set; }
         [JsonPropertyName("buttons")]
         public ButtonConfig[]? Buttons { get; set; }
+        [JsonPropertyName("showTimestamps")]
+        public bool? ShowTimestamps { get; set; }
     }
 
     public class AssetConfig

@@ -40,6 +40,8 @@ namespace geetRPCS.Models
         public string ClientId { get; set; }
         [JsonPropertyName("customDetails")]
         public string CustomDetails { get; set; }
+        [JsonPropertyName("showTimestamps")]
+        public bool? ShowTimestamps { get; set; }
         [JsonPropertyName("buttons")]
         public List<AppButtonConfig> Buttons { get; set; }
         [JsonPropertyName("wittyTexts")]

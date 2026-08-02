@@ -43,7 +43,7 @@ namespace geetRPCS.Services
         private const int MAX_BACKUP_FILES = 3;
         private const int ROTATION_CHECK_INTERVAL = 100; // Check every N writes
         private static int _writeCount = 0;
-        private static readonly string AppFolder = AppDomain.CurrentDomain.BaseDirectory;
+        private static readonly string AppFolder = Utils.AppPaths.UserDataDir;
 
         // Initialize the log service. Must be called once at startup.
         public static void Initialize(string? logFileName = null, LogLevel? minLevel = null)

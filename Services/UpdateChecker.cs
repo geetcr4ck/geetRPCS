@@ -32,10 +32,10 @@ namespace geetRPCS.Services
         private const string GITHUB_API_URL = "https://api.github.com/repos/geetcr4ck/geetRPCS/releases/latest";
         private const string APPS_RAW_URL = "https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/apps.json";
         private const string WITTY_RAW_URL = "https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/witty.json";
-        private static string CURRENT_VERSION => System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.0.0";
-        private static readonly string AppFolder = AppDomain.CurrentDomain.BaseDirectory;
-        private static readonly string AppsPath = Path.Combine(AppFolder, "apps.json");
-        private static readonly string WittyPath = Path.Combine(AppFolder, "witty.json");
+        private static string CURRENT_VERSION => Utils.AppVersion.VersionText;
+        private static readonly string AppFolder = Utils.AppPaths.InstallDir;
+        private static readonly string AppsPath = Utils.AppPaths.AppsPath;
+        private static readonly string WittyPath = Utils.AppPaths.WittyPath;
         private static System.Threading.Timer? _autoUpdateTimer;
         private static bool _isAutoUpdateInProgress = false;
         private const int MAX_RETRIES = 3;

@@ -51,7 +51,7 @@ namespace geetRPCS.UI
         private readonly Color DiscordImageBg = Color.FromArgb(64, 68, 75);
         private readonly Color DiscordBlurple = Color.FromArgb(88, 101, 242);
         private readonly HttpClient _httpClient = new HttpClient();
-        private readonly string CacheFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ImageCache");
+        private readonly string CacheFolder = Utils.AppPaths.ImageCacheDir;
         private readonly Dictionary<string, Image> _imageCache = new Dictionary<string, Image>();
         private readonly Dictionary<string, MemoryStream> _streamCache = new Dictionary<string, MemoryStream>();
         private Dictionary<string, string> _assetIdCache = new Dictionary<string, string>();
@@ -105,7 +105,7 @@ namespace geetRPCS.UI
             this.Location = new Point(workingArea.Right - this.Width - 20, workingArea.Bottom - this.Height - 20);
             try
             {
-                string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rpicon.ico");
+                string iconPath = Utils.AppPaths.IconPath;
                 if (File.Exists(iconPath)) this.Icon = new Icon(iconPath);
             }
             catch { }

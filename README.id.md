@@ -215,6 +215,7 @@ dotnet publish -c Release -r win-x64 -p:PublishSingleFile=false -p:SelfContained
 - Tombol Kustom
 - Validasi URL
 - Pengaturan Per-Aplikasi
+- Timestamp Per-Aplikasi
 - Format Presence Fleksibel
 
 </td>
@@ -439,9 +440,10 @@ Anda sekarang bisa menetapkan **Discord App ID yang berbeda untuk aplikasi terte
     "State": "Ready to work",
     "ActiveDetails": "Working on {app_name}",
     "ActiveState": "{window_title}",
+    "showTimestamps": true,
     "Assets": {
       "LargeImageKey": "geetrpcs-logo",
-      "LargeImageText": "geetRPCS v1.3.9",
+      "LargeImageText": "geetRPCS v1.4.0",
       "SmallImageKey": "verified",
       "SmallImageText": "Powered by geetRPCS"
     },
@@ -468,6 +470,7 @@ Anda sekarang bisa menetapkan **Discord App ID yang berbeda untuk aplikasi terte
     "largeText": "FL Studio 2025",
     "smallKey": "geetrpcs-logo",
     "smallText": "geetRPCS",
+    "showTimestamps": false,
     "customDetails": "Producing on {app_name}",
     "clientId": "OPTIONAL_SPECIFIC_APP_ID",
     "buttons": [{ "label": "My Portfolio", "url": "https://example.com" }]
@@ -524,18 +527,21 @@ geetRPCS memvalidasi URL tombol secara otomatis:
 <summary><b>📁 Struktur File</b></summary>
 
 ```
+📁 Folder Instalasi (tempat geetRPCS.exe berada)
+├── geetRPCS.exe             # Aplikasi utama
+├── apps.json                # Daftar aplikasi (wajib)
+├── witty.json               # Teks jenaka (wajib)
+├── rpicon.ico               # Ikon (wajib)
+└── Languages/               # File bahasa (*.json)
+
 📁 %LOCALAPPDATA%\geetRPCS\
-├── geetRPCS.exe          # Aplikasi utama
-├── apps.json             # Daftar aplikasi (wajib)
-├── witty.json            # Teks jenaka (wajib)
-├── rpicon.ico            # Ikon (wajib)
-├── config.json           # Konfigurasi Discord RPC (opsional)
-├── settings.json         # Pengaturan user (dikelola otomatis)
-├── statistics.json       # Data pelacakan (dikelola otomatis)
-├── geetRPCS.log          # File log (dibuat otomatis)
-├── .telemetry            # Penghitung peluncuran (dibuat otomatis)
-├── ImageCache/           # Cache gambar preview (dibuat otomatis)
-└── Languages/            # File bahasa (dibuat otomatis)
+├── config.json              # Konfigurasi Discord RPC (opsional)
+├── settings.json            # Pengaturan user (dikelola otomatis)
+├── statistics.json          # Data pelacakan (dikelola otomatis)
+├── geetRPCS.log             # File log (dibuat otomatis)
+├── .telemetry               # Penghitung peluncuran (dibuat otomatis)
+├── telemetry.log            # Log telemetri (dibuat otomatis)
+└── ImageCache/              # Cache gambar preview (dibuat otomatis)
 ```
 
 </details>
@@ -645,6 +651,7 @@ Jika Anda melihat peringatan merah di VirusTotal atau Windows Defender:
 - [x] **Update Otomatis Senyap (v1.3.6) 🆕**
 - [x] **Manajer Shortcut (v1.3.6) 🆕**
 - [x] **Update Jaringan & Reliabilitas (v1.3.9) 🆕**
+- [x] **Update Refactor Arsitektur (v1.4.0) 🆕**
 - [ ] Dukungan software lebih banyak
 - [ ] UI Dashboard (WPF/WinUI)
 
@@ -662,5 +669,5 @@ Jika Anda melihat peringatan merah di VirusTotal atau Windows Defender:
 
 <p align="center">
   <sub>Dibuat dengan ❤️ oleh <a href="https://github.com/geetcr4ck">geetcr4ck</a></sub><br/>
-  <sub>geetRPCS v1.3.9 • Apache 2.0 License • 2026</sub>
+  <sub>geetRPCS v1.4.0 • Apache 2.0 License • 2026</sub>
 </p>

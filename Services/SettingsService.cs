@@ -23,7 +23,7 @@ namespace geetRPCS.Services
 {
     internal class SettingsService
     {
-        private static readonly string SettingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.json");
+        private static readonly string SettingsPath = Utils.AppPaths.SettingsPath;
         private static readonly object _lock = new object();
         private static SettingsService _instance;
         private static AppSettings _settings;
@@ -139,7 +139,7 @@ namespace geetRPCS.Services
             {
                 try
                 {
-                    string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "geetRPCS.log");
+                    string logPath = Utils.AppPaths.LogPath;
                     string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
                     File.AppendAllText(logPath, $"[{timestamp}] [SettingsService] [ERROR] Failed to save settings: {ex.Message}\r\n");
                 }

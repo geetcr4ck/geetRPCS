@@ -34,7 +34,7 @@ namespace geetRPCS.Services
         public event Action<string>? OnError;
 
         // --- Constants ---
-        private static readonly string AppFolder = AppDomain.CurrentDomain.BaseDirectory;
+        private static readonly string AppFolder = Utils.AppPaths.InstallDir;
 
         private static readonly string TempUpdateFolder = Path.Combine(Path.GetTempPath(), "geetRPCS_update");
         private const int BUFFER_SIZE = 81920; // 80 KB buffer for faster downloads
