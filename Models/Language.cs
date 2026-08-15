@@ -25,8 +25,6 @@ namespace geetRPCS.Models
         public string MenuPrivateMode { get; set; }
         [JsonPropertyName("menu_reload_config")]
         public string MenuReloadConfig { get; set; }
-        [JsonPropertyName("menu_reset_timers")]
-        public string MenuResetTimers { get; set; }
         [JsonPropertyName("menu_startup")]
         public string MenuStartup { get; set; }
         [JsonPropertyName("menu_quick_actions")]
@@ -39,8 +37,6 @@ namespace geetRPCS.Models
         public string MenuEditApps { get; set; }
         [JsonPropertyName("menu_reload_all")]
         public string MenuReloadAll { get; set; }
-        [JsonPropertyName("menu_clear_timers")]
-        public string MenuClearTimers { get; set; }
         [JsonPropertyName("menu_statistics")]
         public string MenuStatistics { get; set; }
         [JsonPropertyName("menu_today")]
@@ -95,8 +91,6 @@ namespace geetRPCS.Models
         public string MsgConfigReloaded { get; set; }
         [JsonPropertyName("msg_stats_reset")]
         public string MsgStatsReset { get; set; }
-        [JsonPropertyName("msg_timers_reset")]
-        public string MsgTimersReset { get; set; }
         [JsonPropertyName("msg_reload_tip")]
         public string MsgReloadTip { get; set; }
         [JsonPropertyName("msg_language_changed")]
@@ -105,14 +99,14 @@ namespace geetRPCS.Models
         public string DialogReloadTitle { get; set; }
         [JsonPropertyName("dialog_reload_message")]
         public string DialogReloadMessage { get; set; }
-        [JsonPropertyName("dialog_reset_timers_title")]
-        public string DialogResetTimersTitle { get; set; }
-        [JsonPropertyName("dialog_reset_timers_message")]
-        public string DialogResetTimersMessage { get; set; }
         [JsonPropertyName("dialog_reset_stats_title")]
         public string DialogResetStatsTitle { get; set; }
         [JsonPropertyName("dialog_reset_stats_message")]
         public string DialogResetStatsMessage { get; set; }
+        [JsonPropertyName("dialog_remove_desktop_shortcut")]
+        public string DialogRemoveDesktopShortcut { get; set; }
+        [JsonPropertyName("dialog_remove_start_menu_shortcut")]
+        public string DialogRemoveStartMenuShortcut { get; set; }
         [JsonPropertyName("dialog_file_not_found")]
         public string DialogFileNotFound { get; set; }
         [JsonPropertyName("dialog_open_with_notepad")]
@@ -137,8 +131,18 @@ namespace geetRPCS.Models
         public string ErrorStartupTempPath { get; set; }
         [JsonPropertyName("error_startup_failed")]
         public string ErrorStartupFailed { get; set; }
+        [JsonPropertyName("error_startup_fatal")]
+        public string ErrorStartupFatal { get; set; }
+        [JsonPropertyName("error_unable_load_config")]
+        public string ErrorUnableLoadConfig { get; set; }
+        [JsonPropertyName("dialog_error_title")]
+        public string DialogErrorTitle { get; set; }
+        [JsonPropertyName("dialog_fatal_title")]
+        public string DialogFatalTitle { get; set; }
         [JsonPropertyName("btn_save")]
         public string BtnSave { get; set; }
+        [JsonPropertyName("btn_reset_default")]
+        public string BtnResetDefault { get; set; }
         [JsonPropertyName("menu_change_app_id")]
         public string MenuChangeAppId { get; set; }
         [JsonPropertyName("dialog_change_app_id_title")]
@@ -155,6 +159,10 @@ namespace geetRPCS.Models
         public string LinkDownloadAssets { get; set; }
         [JsonPropertyName("error_save_config")]
         public string ErrorSaveConfig { get; set; }
+        [JsonPropertyName("error_invalid_app_id")]
+        public string ErrorInvalidAppId { get; set; }
+        [JsonPropertyName("error_prefix")]
+        public string ErrorPrefix { get; set; }
         [JsonPropertyName("stats_no_data_today")]
         public string StatsNoDataToday { get; set; }
         [JsonPropertyName("stats_no_data_week")]
@@ -205,6 +213,12 @@ namespace geetRPCS.Models
         public string UpdateUpToDate { get; set; }
         [JsonPropertyName("update_check_failed")]
         public string UpdateCheckFailed { get; set; }
+        [JsonPropertyName("update_error_title")]
+        public string UpdateErrorTitle { get; set; }
+        [JsonPropertyName("update_version_unknown")]
+        public string UpdateVersionUnknown { get; set; }
+        [JsonPropertyName("update_no_release_notes")]
+        public string UpdateNoReleaseNotes { get; set; }
         [JsonPropertyName("update_subtitle")]
         public string UpdateSubtitle { get; set; }
         [JsonPropertyName("update_released")]
@@ -215,6 +229,8 @@ namespace geetRPCS.Models
         public string UpdateAppsAvailableMessage { get; set; }
         [JsonPropertyName("update_apps_latest_version")]
         public string UpdateAppsLatestVersion { get; set; }
+        [JsonPropertyName("update_apps_available_body")]
+        public string UpdateAppsAvailableBody { get; set; }
         [JsonPropertyName("btn_update_now")]
         public string BtnUpdateNow { get; set; }
         [JsonPropertyName("msg_apps_updated")]
@@ -225,6 +241,8 @@ namespace geetRPCS.Models
         public string UpdateWittyAvailableMessage { get; set; }
         [JsonPropertyName("update_witty_latest_version")]
         public string UpdateWittyLatestVersion { get; set; }
+        [JsonPropertyName("update_witty_available_body")]
+        public string UpdateWittyAvailableBody { get; set; }
         [JsonPropertyName("msg_witty_updated")]
         public string MsgWittyUpdated { get; set; }
         [JsonPropertyName("update_how_to")]
@@ -239,6 +257,8 @@ namespace geetRPCS.Models
         public string UpdateDownloading { get; set; }
         [JsonPropertyName("update_extracting")]
         public string UpdateExtracting { get; set; }
+        [JsonPropertyName("update_verifying")]
+        public string UpdateVerifying { get; set; }
         [JsonPropertyName("update_preparing")]
         public string UpdatePreparing { get; set; }
         [JsonPropertyName("update_ready_restart")]
@@ -255,6 +275,12 @@ namespace geetRPCS.Models
         public string BtnClose { get; set; }
         [JsonPropertyName("btn_cancel")]
         public string BtnCancel { get; set; }
+        [JsonPropertyName("btn_yes")]
+        public string BtnYes { get; set; }
+        [JsonPropertyName("btn_no")]
+        public string BtnNo { get; set; }
+        [JsonPropertyName("btn_ok")]
+        public string BtnOk { get; set; }
         [JsonPropertyName("error_missing_files")]
         public string ErrorMissingFiles { get; set; }
         [JsonPropertyName("error_files_location")]
@@ -267,6 +293,10 @@ namespace geetRPCS.Models
         public string ErrorReloadFailed { get; set; }
         [JsonPropertyName("error_startup_toggle")]
         public string ErrorStartupToggle { get; set; }
+        [JsonPropertyName("error_manage_desktop_shortcut")]
+        public string ErrorManageDesktopShortcut { get; set; }
+        [JsonPropertyName("error_manage_start_menu_shortcut")]
+        public string ErrorManageStartMenuShortcut { get; set; }
         [JsonPropertyName("error_open_folder")]
         public string ErrorOpenFolder { get; set; }
         [JsonPropertyName("error_open_file")]
@@ -309,10 +339,30 @@ namespace geetRPCS.Models
         public string MsgMouseEnergyOff { get; set; }
         [JsonPropertyName("menu_telemetry")]
         public string MenuTelemetry { get; set; }
+        [JsonPropertyName("menu_auto_update")]
+        public string MenuAutoUpdate { get; set; }
+        [JsonPropertyName("menu_manage_shortcuts")]
+        public string MenuManageShortcuts { get; set; }
+        [JsonPropertyName("menu_shortcut_desktop")]
+        public string MenuShortcutDesktop { get; set; }
+        [JsonPropertyName("menu_shortcut_start_menu")]
+        public string MenuShortcutStartMenu { get; set; }
         [JsonPropertyName("msg_telemetry_on")]
         public string MsgTelemetryOn { get; set; }
         [JsonPropertyName("msg_telemetry_off")]
         public string MsgTelemetryOff { get; set; }
+        [JsonPropertyName("msg_auto_update_enabled")]
+        public string MsgAutoUpdateEnabled { get; set; }
+        [JsonPropertyName("msg_auto_update_disabled")]
+        public string MsgAutoUpdateDisabled { get; set; }
+        [JsonPropertyName("msg_shortcut_desktop_created")]
+        public string MsgShortcutDesktopCreated { get; set; }
+        [JsonPropertyName("msg_shortcut_desktop_removed")]
+        public string MsgShortcutDesktopRemoved { get; set; }
+        [JsonPropertyName("msg_shortcut_start_menu_created")]
+        public string MsgShortcutStartMenuCreated { get; set; }
+        [JsonPropertyName("msg_shortcut_start_menu_removed")]
+        public string MsgShortcutStartMenuRemoved { get; set; }
         [JsonPropertyName("menu_tray_animation")]
         public string MenuTrayAnimation { get; set; }
         [JsonPropertyName("msg_tray_animation_on")]
@@ -357,6 +407,30 @@ namespace geetRPCS.Models
         public string PreviewStatusError { get; set; }
         [JsonPropertyName("preview_header_asset_info")]
         public string PreviewHeaderAssetInfo { get; set; }
+        [JsonPropertyName("preview_idling")]
+        public string PreviewIdling { get; set; }
+        [JsonPropertyName("preview_ready_to_work")]
+        public string PreviewReadyToWork { get; set; }
+        [JsonPropertyName("preview_paused")]
+        public string PreviewPaused { get; set; }
+        [JsonPropertyName("preview_presence_paused")]
+        public string PreviewPresencePaused { get; set; }
+        [JsonPropertyName("preview_not_showing")]
+        public string PreviewNotShowing { get; set; }
+        [JsonPropertyName("preview_initializing")]
+        public string PreviewInitializing { get; set; }
+        [JsonPropertyName("preview_button_placeholder")]
+        public string PreviewButtonPlaceholder { get; set; }
+        [JsonPropertyName("preview_large_image")]
+        public string PreviewLargeImage { get; set; }
+        [JsonPropertyName("preview_small_image")]
+        public string PreviewSmallImage { get; set; }
+        [JsonPropertyName("preview_large_empty")]
+        public string PreviewLargeEmpty { get; set; }
+        [JsonPropertyName("preview_small_empty")]
+        public string PreviewSmallEmpty { get; set; }
+        [JsonPropertyName("preview_elapsed")]
+        public string PreviewElapsed { get; set; }
         [JsonPropertyName("update_dialog_current_version")]
         public string UpdateDialogCurrentVersion { get; set; }
         [JsonPropertyName("update_dialog_up_to_date_message")]

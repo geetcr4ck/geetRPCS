@@ -316,9 +316,8 @@ namespace geetRPCS.Services
                 {
                     Log("Failed to fetch latest release", "ERROR");
                     if (showUpToDateMessage)
-                        MessageBox.Show(LanguageManager.Current.UpdateCheckFailed,
-                            LanguageManager.Current.UpdateAvailableTitle,
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        UI.InfoDialog.Show(LanguageManager.Current.UpdateCheckFailed,
+                            LanguageManager.Current.UpdateAvailableTitle);
                     return null;
                 }
                 string latestVersion = latestRelease.TagName?.TrimStart('v') ?? "0.0.0";
@@ -341,9 +340,8 @@ namespace geetRPCS.Services
             {
                 Log($"Update check failed: {ex.Message}", "ERROR");
                 if (showUpToDateMessage)
-                    MessageBox.Show($"{LanguageManager.Current.UpdateCheckFailed}\n\n{ex.Message}",
-                        LanguageManager.Current.UpdateAvailableTitle,
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    UI.InfoDialog.Show($"{LanguageManager.Current.UpdateCheckFailed}\n\n{ex.Message}",
+                        LanguageManager.Current.UpdateAvailableTitle);
                 return null;
             }
         }

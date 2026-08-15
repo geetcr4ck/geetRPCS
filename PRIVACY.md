@@ -1,6 +1,6 @@
 # Privacy Policy for geetRPCS
 
-Last Updated: January 18, 2026
+Last Updated: August 15, 2026
 
 geetRPCS ("we", "our", or "the Application") is designed with privacy as a core principle. This Privacy Policy explains what data we collect, how it is used, and your control over it.
 
@@ -43,6 +43,7 @@ All user data is stored locally in your `%LOCALAPPDATA%\geetRPCS\` directory:
 - `apps.json`: App definitions.
 - `statistics.json`: Your personal usage stats (viewable only by you).
 - `geetRPCS.log`: Local debug logs.
+- `Languages\`: Translation files shipped with the app (updated with each release; no user data). Your language preference is stored in `settings.json`.
 
 ## 4. Updates to this Policy
 

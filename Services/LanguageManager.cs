@@ -126,7 +126,7 @@ namespace geetRPCS.Services
                 }
 
                 string json = File.ReadAllText(path);
-                var merged = MergeLanguage(json);
+                var merged = MergeLanguage(json, languageCode);
                 if (merged == null)
                 {
                     Log($"Failed to deserialize language: {languageCode}", "WARNING");
@@ -155,20 +155,27 @@ namespace geetRPCS.Services
         /// <summary>
         /// Merges the translation file on top of the English file, filling any
         /// missing or null key with the English value. This is the single source
-        /// of fallback translations for the whole app.
+        /// of fallback translations for the whole app. Missing keys are logged
+        /// as warnings so untranslated keys surface during development.
         /// </summary>
-        private static string MergeLanguage(string languageJson)
+        private static string MergeLanguage(string languageJson, string languageCode)
         {
             var englishNode = GetEnglishNode();
             var node = JsonNode.Parse(languageJson?.Trim() ?? "{}");
             if (node is JsonObject obj && englishNode != null)
             {
+                var missingKeys = new List<string>();
                 foreach (var kvp in englishNode)
                 {
                     if (obj.TryGetPropertyValue(kvp.Key, out var value) &&
                         value != null && value.GetValueKind() != JsonValueKind.Null)
                         continue;
                     obj[kvp.Key] = kvp.Value?.DeepClone();
+                    missingKeys.Add(kvp.Key);
+                }
+                if (missingKeys.Count > 0 && languageCode != FallbackCode)
+                {
+                    Log($"Language \"{languageCode}\": {missingKeys.Count} untranslated key(s) fell back to English: {string.Join(", ", missingKeys)}", "WARNING");
                 }
             }
             return node?.ToJsonString() ?? "{}";
@@ -267,4 +274,4 @@ namespace geetRPCS.Services
             public string Name { get; set; }
         }
     }
-}
+}

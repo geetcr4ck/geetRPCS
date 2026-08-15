@@ -63,6 +63,8 @@ This file is the "brain" of the application. Unlike modern .NET applications tha
   - Handling events from the Tray Icon and Hotkeys.
   - Updating Discord RPC based on input from `TaskbarWatcher`.
 
+> **v1.4.0+:** `Program.cs` is now a thin host. Orchestration moved to `AppCoordinator`, `PresenceBuilder`, `TrayMenuController`, `StatsCoordinator` and `UpdateOrchestrator` (see the services below).
+
 ### 2. Services
 
 These services handle specific logic to keep `Program.cs` clean (although currently, `Program.cs` still performs heavy orchestration).
@@ -75,6 +77,18 @@ These services handle specific logic to keep `Program.cs` clean (although curren
 | **`TelemetryService`**     | Sends anonymous usage data (detected applications, duration) for development analysis.                                                    |
 | **`UpdateChecker`**        | Checks for application updates and database updates (`apps.json`/`witty.json`) from GitHub.                                               |
 | **`MouseActivityTracker`** | (Experimental) Calculates mouse movement "energy" for dynamic status features.                                                            |
+
+The following services were added in the v1.4 line:
+
+| Service                  | Description                                                                                           |
+| :----------------------- | :---------------------------------------------------------------------------------------------------- |
+| **`AppCoordinator`**     | Orchestrates app detection, state and RPC updates; validates Discord Application IDs.                 |
+| **`PresenceBuilder`**    | Assembles the Discord presence payload from app config, narrative text and mouse energy.              |
+| **`StatsCoordinator`**   | Tracks per-app usage statistics and handles CSV/JSON export.                                          |
+| **`UpdateOrchestrator`** | Coordinates update checks, downloads and the auto-update flow together with `UpdateDownloader`.      |
+| **`LanguageManager`**    | Single access point for localization: loads `Languages/*.json`, merges missing keys with `en.json`, logs a warning for every fallback (see [LOCALIZATION.md](LOCALIZATION.md)). |
+| **`LogService`**         | Centralized logging with levels and rotation.                                                        |
+| **`StartupTask`**        | Manages the Windows startup shortcut.                                                                |
 
 ### 3. Data Persistence
 
@@ -89,8 +103,12 @@ These services handle specific logic to keep `Program.cs` clean (although curren
 Since it is System Tray-based, the UI is minimalist:
 
 - **`ContextMenu`**: Right-click menu on the tray icon (Pause, Manage Apps, etc.).
+- **`TrayMenuController`**: Builds the fully localized tray menu (the old `ContextMenu` replacement).
 - **`PresencePreviewForm`**: Form to view real-time preview of the Rich Presence display.
 - **`ManageAppsForm`**: Interface to disable detection of specific applications.
+- **`InfoDialog` / `ConfirmDialog` / `UpdateDialogs`**: Custom dark-theme dialogs replacing native message boxes.
+
+Every user-visible string is routed through `LanguageManager`; all 24 shipped languages are complete, and a missing key falls back to English with a warning in `geetRPCS.log` (see [LOCALIZATION.md](LOCALIZATION.md)).
 
 ## Data Flow
 
@@ -105,15 +123,40 @@ Since it is System Tray-based, the UI is minimalist:
    - Call `rpc.SetPresence()` with the assembled data.
    - Trigger tray animation via `TrayIconAnimator`.
 
+## Testing & CI
+
+### Tests project (`Tests/`)
+
+A dependency-free console runner — `dotnet run --project Tests` — that validates:
+
+- **App-ID rules** – `IsValidApplicationId()` (17–20 digits, digits only).
+- **apps.json integrity** – unique process names, valid client IDs, non-empty image keys, valid button URLs/labels, max 2 buttons.
+- **Telemetry default** – telemetry stays ON for new installs.
+- **Language parity** – every key in `en.json` must exist in every language file and `template.json`; a missing key fails the run.
+
+The main project exposes internals to `Tests` via `InternalsVisibleTo`.
+
+### CI pipeline (`.github/workflows/ci.yml`)
+
+GitHub Actions builds the solution and runs the full test suite on every push to `main` and every pull request, so an invalid `apps.json` or a missing translation key fails the build before merge.
+
+### Localization
+
+See [LOCALIZATION.md](LOCALIZATION.md) for the architecture: `LanguageManager` is the single access point, per-file keys missing from a language fall back to `en.json` (with a `WARNING` naming them in `geetRPCS.log`), and `template.json` is the canonical English reference for translators.
+
 ## Source Folder Structure
 
 ```text
 geetRPCS/
-├── Program.cs           # Main Entry Point
+├── Program.cs           # Thin host (startup, single instance, hotkeys)
 ├── Models/              # Data Structures (json mapping objects)
-├── Services/            # Logic Providers (Network, File I/O, System Hooks)
-├── UI/                  # Windows Forms (Preview, Settings)
-├── Utils/               # Helpers (GlobalHotkeys, MemoryHelper)
-├── Languages/           # Localization Files (.json)
+├── Services/            # Logic Providers (AppCoordinator, PresenceBuilder, LanguageManager, ...)
+├── UI/                  # Windows Forms (Preview, Manage Apps, dialogs, tray menu)
+├── Utils/               # Helpers (AppPaths, GlobalHotkeys, ShortcutManager, ...)
+├── Languages/           # Localization Files (.json, one per language)
+├── Tests/               # Dependency-free validation runner (apps.json + language parity)
+├── UpdaterHelper/       # Maintenance tool (install/update/uninstall)
+├── docs/                # Extra documentation (CUSTOM_APP_ID.md, ...)
+├── .github/workflows/   # CI pipeline (build + tests)
 └── assets/              # Icons and Images
 ```

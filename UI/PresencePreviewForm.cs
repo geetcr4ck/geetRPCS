@@ -207,7 +207,7 @@ namespace geetRPCS.UI
             mainPanel.Controls.Add(lblAppName);
             lblDetails = new Label
             {
-                Text = "Idling...",
+                Text = LanguageManager.Current.PreviewIdling,
                 Font = new Font("Segoe UI", 9),
                 ForeColor = DiscordTextMuted,
                 Location = new Point(80, 34),
@@ -217,7 +217,7 @@ namespace geetRPCS.UI
             mainPanel.Controls.Add(lblDetails);
             lblState = new Label
             {
-                Text = "Ready to work",
+                Text = LanguageManager.Current.PreviewReadyToWork,
                 Font = new Font("Segoe UI", 9),
                 ForeColor = DiscordTextMuted,
                 Location = new Point(80, 52),
@@ -238,11 +238,11 @@ namespace geetRPCS.UI
         }
         private void CreateButtons()
         {
-            button1Panel = CreateButton(12, 100, "Button 1");
+            button1Panel = CreateButton(12, 100, string.Format(LanguageManager.Current.PreviewButtonPlaceholder, 1));
             lblButton1 = (Label)button1Panel.Controls[0];
             button1Panel.Visible = false;
             mainPanel.Controls.Add(button1Panel);
-            button2Panel = CreateButton(12, 138, "Button 2");
+            button2Panel = CreateButton(12, 138, string.Format(LanguageManager.Current.PreviewButtonPlaceholder, 2));
             lblButton2 = (Label)button2Panel.Controls[0];
             button2Panel.Visible = false;
             mainPanel.Controls.Add(button2Panel);
@@ -274,7 +274,7 @@ namespace geetRPCS.UI
             });
             lblLargeImageText = new Label
             {
-                Text = "Large: -",
+                Text = LanguageManager.Current.PreviewLargeEmpty,
                 Font = new Font("Segoe UI", 8),
                 ForeColor = DiscordTextMuted,
                 Location = new Point(12, 30),
@@ -284,7 +284,7 @@ namespace geetRPCS.UI
             infoPanel.Controls.Add(lblLargeImageText);
             lblSmallImageText = new Label
             {
-                Text = "Small: -",
+                Text = LanguageManager.Current.PreviewSmallEmpty,
                 Font = new Font("Segoe UI", 8),
                 ForeColor = DiscordTextMuted,
                 Location = new Point(12, 48),
@@ -294,7 +294,7 @@ namespace geetRPCS.UI
             infoPanel.Controls.Add(lblSmallImageText);
             lblCdnStatus = new Label
             {
-                Text = "📡 Initializing...",
+                Text = LanguageManager.Current.PreviewInitializing,
                 Font = new Font("Segoe UI", 7),
                 ForeColor = DiscordTextDark,
                 Location = new Point(12, 70),
@@ -793,10 +793,10 @@ namespace geetRPCS.UI
             if (lblElapsed == null || lblElapsed.IsDisposed) return;
             if (_startTime == null) { lblElapsed.Text = ""; return; }
             var elapsed = DateTime.Now - _startTime.Value;
-            if (elapsed.TotalHours >= 1)
-                lblElapsed.Text = $"⏱️ {(int)elapsed.TotalHours:00}:{elapsed.Minutes:00}:{elapsed.Seconds:00} elapsed";
-            else
-                lblElapsed.Text = $"⏱️ {elapsed.Minutes:00}:{elapsed.Seconds:00} elapsed";
+            string elapsedText = elapsed.TotalHours >= 1
+                ? $"{(int)elapsed.TotalHours:00}:{elapsed.Minutes:00}:{elapsed.Seconds:00}"
+                : $"{elapsed.Minutes:00}:{elapsed.Seconds:00}";
+            lblElapsed.Text = string.Format(LanguageManager.Current.PreviewElapsed, elapsedText);
         }
         #endregion
         #region ----- Update Presence -----
@@ -809,7 +809,7 @@ namespace geetRPCS.UI
             if (lblAppName != null && !lblAppName.IsDisposed)
                 lblAppName.Text = presence.Assets?.LargeImageText ?? "geetRPCS";
             if (lblDetails != null && !lblDetails.IsDisposed)
-                lblDetails.Text = presence.Details ?? "Idling...";
+                lblDetails.Text = presence.Details ?? LanguageManager.Current.PreviewIdling;
             if (lblState != null && !lblState.IsDisposed)
             {
                 lblState.Text = presence.State ?? "";
@@ -856,9 +856,9 @@ namespace geetRPCS.UI
             string largeText = presence.Assets?.LargeImageText ?? "-";
             string smallText = presence.Assets?.SmallImageText ?? "-";
             if (lblLargeImageText != null && !lblLargeImageText.IsDisposed)
-                lblLargeImageText.Text = $"Large: {largeText} ({largeKey})";
+                lblLargeImageText.Text = string.Format(LanguageManager.Current.PreviewLargeImage, largeText, largeKey);
             if (lblSmallImageText != null && !lblSmallImageText.IsDisposed)
-                lblSmallImageText.Text = $"Small: {smallText} ({smallKey})";
+                lblSmallImageText.Text = string.Format(LanguageManager.Current.PreviewSmallImage, smallText, smallKey);
             await LoadImagesAsync(presence.Assets);
             SetLiveStatus();
         }
@@ -868,17 +868,17 @@ namespace geetRPCS.UI
         {
             if (this.InvokeRequired) { this.BeginInvoke(new Action(SetIdleState)); return; }
             if (lblAppName != null && !lblAppName.IsDisposed) lblAppName.Text = "geetRPCS";
-            if (lblDetails != null && !lblDetails.IsDisposed) lblDetails.Text = "Idling...";
+            if (lblDetails != null && !lblDetails.IsDisposed) lblDetails.Text = LanguageManager.Current.PreviewIdling;
             if (lblState != null && !lblState.IsDisposed)
             {
-                lblState.Text = "Ready to work";
+                lblState.Text = LanguageManager.Current.PreviewReadyToWork;
                 lblState.Visible = true;
             }
             if (lblElapsed != null && !lblElapsed.IsDisposed) lblElapsed.Text = "";
             if (button1Panel != null && !button1Panel.IsDisposed) button1Panel.Visible = false;
             if (button2Panel != null && !button2Panel.IsDisposed) button2Panel.Visible = false;
-            if (lblLargeImageText != null && !lblLargeImageText.IsDisposed) lblLargeImageText.Text = "Large: -";
-            if (lblSmallImageText != null && !lblSmallImageText.IsDisposed) lblSmallImageText.Text = "Small: -";
+            if (lblLargeImageText != null && !lblLargeImageText.IsDisposed) lblLargeImageText.Text = LanguageManager.Current.PreviewLargeEmpty;
+            if (lblSmallImageText != null && !lblSmallImageText.IsDisposed) lblSmallImageText.Text = LanguageManager.Current.PreviewSmallEmpty;
             _startTime = null;
             ClearImages();
             SetLiveStatus();
@@ -888,13 +888,13 @@ namespace geetRPCS.UI
             if (this.InvokeRequired) { this.BeginInvoke(new Action(SetPausedState)); return; }
             if (lblStatus != null && !lblStatus.IsDisposed)
             {
-                lblStatus.Text = "● Paused";
+                lblStatus.Text = LanguageManager.Current.PreviewPaused;
                 lblStatus.ForeColor = DiscordYellow;
             }
-            if (lblDetails != null && !lblDetails.IsDisposed) lblDetails.Text = "Presence paused";
+            if (lblDetails != null && !lblDetails.IsDisposed) lblDetails.Text = LanguageManager.Current.PreviewPresencePaused;
             if (lblState != null && !lblState.IsDisposed)
             {
-                lblState.Text = "Not showing on Discord";
+                lblState.Text = LanguageManager.Current.PreviewNotShowing;
                 lblState.Visible = true;
             }
             if (lblElapsed != null && !lblElapsed.IsDisposed) lblElapsed.Text = "";
@@ -904,7 +904,7 @@ namespace geetRPCS.UI
         {
             if (lblStatus != null && !lblStatus.IsDisposed)
             {
-                lblStatus.Text = "● Live";
+                lblStatus.Text = LanguageManager.Current.PreviewLive;
                 lblStatus.ForeColor = DiscordGreen;
             }
         }

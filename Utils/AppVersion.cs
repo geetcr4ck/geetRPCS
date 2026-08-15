@@ -20,7 +20,7 @@ namespace geetRPCS.Utils
 {
     internal static class AppVersion
     {
-        // Short form, e.g. "1.4.0"
+        // Short form, e.g. "1.4.1"
         public static string VersionText
         {
             get
@@ -30,7 +30,7 @@ namespace geetRPCS.Utils
             }
         }
 
-        // Full display string, e.g. "geetRPCS v1.4.0"
+        // Full display string, e.g. "geetRPCS v1.4.1"
         public static string DisplayName => $"geetRPCS v{VersionText}";
     }
 }

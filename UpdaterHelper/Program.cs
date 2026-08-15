@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Runtime.InteropServices;
+using geetRPCS.Utils;
 
 [assembly: Guid("C649A8F7-9477-4402-8618-97F107198C82")]
 
@@ -44,6 +45,7 @@ namespace geetRPCS.Updater
                 string? sourcePath = null;
                 string? targetPath = null;
                 string? exeName = null;
+                string? expectedChecksum = null;
 
                 for (int i = 0; i < args.Length; i++)
                 {
@@ -54,6 +56,8 @@ namespace geetRPCS.Updater
                         targetPath = args[++i];
                     else if (arg == "--exe" && i + 1 < args.Length)
                         exeName = args[++i];
+                    else if (arg == "--checksum" && i + 1 < args.Length)
+                        expectedChecksum = args[++i];
                 }
 
                 if (string.IsNullOrEmpty(sourcePath) ||
@@ -84,6 +88,26 @@ namespace geetRPCS.Updater
                     return 1;
                 }
                 OK();
+
+                // Verify source integrity before touching the installation
+                if (!string.IsNullOrWhiteSpace(expectedChecksum))
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("  Verifying update integrity...");
+                    Console.ResetColor();
+
+                    string actual = DirectoryChecksum.Compute(sourcePath);
+                    if (!actual.Equals(expectedChecksum, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Error("Checksum verification FAILED - aborting to protect the installation.");
+                        Log("  Expected: " + expectedChecksum);
+                        Log("  Actual:   " + actual);
+                        Wait();
+                        return 1;
+                    }
+                    Log("  Checksum verified: " + actual);
+                    OK();
+                }
 
                 // Step 2: Update files (overwrite)
                 Step(2, "Updating files...");
@@ -257,7 +281,7 @@ namespace geetRPCS.Updater
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine();
-            Console.WriteLine("  geetRPCS Maintenance Tool v1.4.0");
+            Console.WriteLine("  geetRPCS Maintenance Tool v1.4.1");
             Console.WriteLine("  --------------------------------");
             Console.ResetColor();
             Console.WriteLine();
@@ -273,7 +297,7 @@ namespace geetRPCS.Updater
 
         static void ShowUsage()
         {
-            Console.WriteLine("Usage: Updater.exe --source <path> --target <path> --exe <name>");
+            Console.WriteLine("Usage: Updater.exe --source <path> --target <path> --exe <name> [--checksum <sha256>]");
             Wait();
         }
 
@@ -311,7 +335,8 @@ namespace geetRPCS.Updater
         {
             Console.WriteLine();
             Console.WriteLine("  Press any key to exit...");
-            Console.ReadKey(true);
+            try { Console.ReadKey(true); }
+            catch (InvalidOperationException) { /* redirected input - just exit */ }
         }
     }
 }

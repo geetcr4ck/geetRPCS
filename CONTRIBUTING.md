@@ -44,7 +44,9 @@ Enhancement suggestions are welcome! Please create an issue or start a discussio
 
 Want to help translate geetRPCS into your language? We'd love that!
 
-Please check out our [Localization Guide](LOCALIZATION.md) for detailed instructions on how to add a new language.
+Please check out our [Localization Guide](LOCALIZATION.md) for detailed instructions on how to add a new language, how the `en.json` fallback works, and how to add a new key.
+
+**Important:** every user-visible string must go through `LanguageManager` — never hardcode English in the UI. When adding a key, add it to `Models/Language.cs`, `Languages/en.json`, and `Languages/template.json`; the other 22 languages inherit from English until translated. Run the `Tests` project to make sure every language file still parses as JSON.
 
 
 ## Pull Requests
@@ -56,7 +58,12 @@ Please check out our [Localization Guide](LOCALIZATION.md) for detailed instruct
     git checkout -b feat/amazing-feature
     ```
 2.  **Make your changes**.
-3.  **Test your changes**. Ensure the application builds and runs correctly.
+3.  **Test your changes**. Ensure the application builds and runs correctly:
+    ```bash
+    dotnet build
+    dotnet run --project Tests
+    ```
+    The `Tests` project is a dependency-free runner that validates `apps.json` integrity and app-ID rules — run it after any change to `apps.json`, `Languages/*.json`, or the localization model.
 4.  **Follow the coding style**:
     *   Use standard C# coding conventions.
     *   Keep code clean and readable.
@@ -77,6 +84,7 @@ Please check out our [Localization Guide](LOCALIZATION.md) for detailed instruct
 *   Follow [Microsoft's C# Coding Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions).
 *   Ensure all new features handle potential errors gracefully (try-catch blocks where appropriate).
 *   Logging: Use the centralized logging system (`Logger.LogError`, `Logger.LogInfo`) instead of `Console.WriteLine`.
+*   Localization: All user-visible strings must be routed through `LanguageManager` (see [LOCALIZATION.md](LOCALIZATION.md)).
 
 ## License
 

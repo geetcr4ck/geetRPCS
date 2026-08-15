@@ -7,10 +7,10 @@
     <AssemblyName>geetRPCS</AssemblyName>
     <RootNamespace>geetRPCS</RootNamespace>
     <ApplicationIcon>rpicon.ico</ApplicationIcon>
-    <Version>1.4.0</Version>
-    <AssemblyVersion>1.4.0.0</AssemblyVersion>
-    <FileVersion>1.4.0.0</FileVersion>
-    <InformationalVersion>1.4.0</InformationalVersion>
+    <Version>1.4.1</Version>
+    <AssemblyVersion>1.4.1.0</AssemblyVersion>
+    <FileVersion>1.4.1.0</FileVersion>
+    <InformationalVersion>1.4.1</InformationalVersion>
     <Copyright>© 2026 geetcr4ck</Copyright>
     <Company>geetcr4ck</Company>
     <Product>geetRPCS</Product>
@@ -29,7 +29,12 @@
 
   <ItemGroup>
     <Compile Remove="UpdaterHelper\**" />
+    <Compile Remove="Tests\**" />
     <None Remove="UpdaterHelper\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Tests" />
   </ItemGroup>
 
   <ItemGroup>

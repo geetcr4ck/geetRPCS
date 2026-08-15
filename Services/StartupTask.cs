@@ -68,7 +68,7 @@ namespace geetRPCS.Services
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"{LanguageManager.Current.ErrorStartupFailed}\n{ex.Message}", "geetRPCS",
+                MessageBox.Show($"{LanguageManager.Current.ErrorStartupFailed}\n{ex.Message}", LanguageManager.Current.AppName,
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 throw; // Re-throw to let caller handle if needed
             }

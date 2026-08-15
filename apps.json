@@ -319,16 +319,6 @@
     "buttons": []
   },
   {
-    "process": "Maya",
-    "appName": "Autodesk Maya",
-    "clientId": "1461710809292996781",
-    "largeKey": "maya",
-    "largeText": "Autodesk Maya",
-    "smallKey": "geetrpcs-small",
-    "customDetails": "{witty_text}",
-    "buttons": []
-  },
-  {
     "process": "ZBrush",
     "appName": "ZBrush",
     "clientId": "1461725050368430090",
@@ -527,6 +517,7 @@
   {
     "process": "krita",
     "appName": "Krita",
+    "clientId": "1538110534765772841",
     "largeKey": "krita",
     "largeText": "Krita",
     "smallKey": "geetrpcs-small",
@@ -558,16 +549,6 @@
   },
   {
     "process": "Figma",
-    "appName": "Figma",
-    "clientId": "1461666416087269538",
-    "largeKey": "figma",
-    "largeText": "Figma",
-    "smallKey": "geetrpcs-small",
-    "customDetails": "{witty_text}",
-    "buttons": []
-  },
-  {
-    "process": "figma",
     "appName": "Figma",
     "clientId": "1461666416087269538",
     "largeKey": "figma",
@@ -769,6 +750,7 @@
   {
     "process": "Orange",
     "appName": "Orange Data Mining",
+    "clientId": "1538098512472965141",
     "largeKey": "orange",
     "largeText": "Orange Data Mining",
     "smallKey": "geetrpcs-small",
@@ -778,6 +760,7 @@
   {
     "process": "Orange3",
     "appName": "Orange Data Mining",
+    "clientId": "1538098512472965141",
     "largeKey": "orange",
     "largeText": "Orange Data Mining",
     "smallKey": "geetrpcs-small",
@@ -788,6 +771,7 @@
     "process": "pythonw",
     "windowTitle": "Orange",
     "appName": "Orange Data Mining",
+    "clientId": "1538098512472965141",
     "largeKey": "orange",
     "largeText": "Orange Data Mining",
     "smallKey": "geetrpcs-small",
@@ -798,8 +782,73 @@
     "process": "python",
     "windowTitle": "Orange",
     "appName": "Orange Data Mining",
+    "clientId": "1538098512472965141",
     "largeKey": "orange",
     "largeText": "Orange Data Mining",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "_comment": "========== GAME ENGINES =========="
+  },
+  {
+    "process": "Unity",
+    "appName": "Unity",
+    "clientId": "1538097132031057971",
+    "largeKey": "unity",
+    "largeText": "Unity",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "UnrealEditor",
+    "appName": "Unreal Engine",
+    "clientId": "1538096793026564166",
+    "largeKey": "unrealengine",
+    "largeText": "Unreal Engine",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "UE4Editor",
+    "appName": "Unreal Engine",
+    "clientId": "1538096793026564166",
+    "largeKey": "unrealengine",
+    "largeText": "Unreal Engine",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "RobloxStudioBeta",
+    "appName": "Roblox Studio",
+    "clientId": "1538101138925293608",
+    "largeKey": "robloxstudio",
+    "largeText": "Roblox Studio",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "Godot",
+    "appName": "Godot Engine",
+    "clientId": "1538103984164700200",
+    "largeKey": "godot",
+    "largeText": "Godot Engine",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "Godot_v",
+    "processMatchMode": "StartsWith",
+    "appName": "Godot Engine",
+    "clientId": "1538103984164700200",
+    "largeKey": "godot",
+    "largeText": "Godot Engine",
     "smallKey": "geetrpcs-small",
     "customDetails": "{witty_text}",
     "buttons": []

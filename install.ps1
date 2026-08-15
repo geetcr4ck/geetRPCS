@@ -364,6 +364,41 @@ function Install-GeetRPCS {
         Write-Host "`n      Download complete!" -ForegroundColor Green
 
         # ══════════════════════════════════════════════════════════════
+        # [4.5/7] VERIFY SHA-256 CHECKSUM
+        # ══════════════════════════════════════════════════════════════
+        $checksumAsset = $releaseInfo.assets | Where-Object { $_.name -like "checksums-v*.txt" } | Select-Object -First 1
+        if ($checksumAsset) {
+            Write-Host "      Verifying SHA-256 checksum..." -ForegroundColor Yellow
+            $checksumTempPath = Join-Path $env:TEMP $checksumAsset.name
+            try {
+                $webClient.DownloadFile($checksumAsset.browser_download_url, $checksumTempPath)
+
+                $actualHash = (Get-FileHash -Path $tempPath -Algorithm SHA256).Hash
+                $expectedHash = $null
+                foreach ($line in Get-Content $checksumTempPath) {
+                    if ($line -match '^([0-9A-Fa-f]{64})\s+(\S+)\s*$' -and $matches[2] -eq $asset.name) {
+                        $expectedHash = $matches[1]
+                        break
+                    }
+                }
+
+                if (-not $expectedHash) {
+                    throw "Checksum entry for '$($asset.name)' not found in $($checksumAsset.name). Aborting for safety."
+                }
+                if (-not [string]::Equals($actualHash, $expectedHash, [System.StringComparison]::OrdinalIgnoreCase)) {
+                    throw "SHA-256 verification FAILED for $($asset.name)`n  Expected: $expectedHash`n  Actual:   $actualHash`n  The download may be corrupted or tampered with. Aborting."
+                }
+                Write-Host "      SHA-256 verified: $expectedHash" -ForegroundColor Green
+            }
+            finally {
+                Remove-Item $checksumTempPath -Force -ErrorAction SilentlyContinue
+            }
+        }
+        else {
+            Write-Host "      No checksum file in release - skipping verification" -ForegroundColor DarkYellow
+        }
+
+        # ══════════════════════════════════════════════════════════════
         # [5/7] EXTRACT FILES
         # ══════════════════════════════════════════════════════════════
         Write-Host "[5/7] Extracting files..." -ForegroundColor Yellow

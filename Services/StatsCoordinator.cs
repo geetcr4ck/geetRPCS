@@ -19,6 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using geetRPCS.UI;
 
 namespace geetRPCS.Services
 {
@@ -55,8 +56,7 @@ namespace geetRPCS.Services
             var topApps = _statistics.GetTopAppsToday(10);
             if (topApps.Count == 0)
             {
-                MessageBox.Show(LanguageManager.Current.StatsNoDataToday, LanguageManager.Current.MenuToday,
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                InfoDialog.Show(LanguageManager.Current.StatsNoDataToday, LanguageManager.Current.MenuToday);
                 return;
             }
             var sb = new StringBuilder();
@@ -71,7 +71,7 @@ namespace geetRPCS.Services
             }
             var totalToday = topApps.Sum(x => x.time.TotalSeconds);
             sb.AppendLine($"{LanguageManager.Current.StatsTotal} {FormatTimeSpan(TimeSpan.FromSeconds(totalToday))}");
-            MessageBox.Show(sb.ToString(), LanguageManager.Current.MenuToday, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            InfoDialog.Show(sb.ToString(), LanguageManager.Current.MenuToday);
         }
 
         public void ShowWeek()
@@ -87,8 +87,7 @@ namespace geetRPCS.Services
                 .OrderByDescending(x => x.Item2).Take(10).ToList();
             if (appsThisWeek.Count == 0)
             {
-                MessageBox.Show(LanguageManager.Current.StatsNoDataWeek, LanguageManager.Current.MenuThisWeek,
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                InfoDialog.Show(LanguageManager.Current.StatsNoDataWeek, LanguageManager.Current.MenuThisWeek);
                 return;
             }
             int rank = 1;
@@ -100,7 +99,7 @@ namespace geetRPCS.Services
             }
             var totalWeek = appsThisWeek.Sum(x => x.Item2.TotalSeconds);
             sb.AppendLine($"{LanguageManager.Current.StatsTotal} {FormatTimeSpan(TimeSpan.FromSeconds(totalWeek))}");
-            MessageBox.Show(sb.ToString(), LanguageManager.Current.MenuThisWeek, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            InfoDialog.Show(sb.ToString(), LanguageManager.Current.MenuThisWeek);
         }
 
         public void ShowMonth()
@@ -116,8 +115,7 @@ namespace geetRPCS.Services
                 .OrderByDescending(x => x.Item2).Take(10).ToList();
             if (appsThisMonth.Count == 0)
             {
-                MessageBox.Show(LanguageManager.Current.StatsNoDataMonth, LanguageManager.Current.MenuThisMonth,
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                InfoDialog.Show(LanguageManager.Current.StatsNoDataMonth, LanguageManager.Current.MenuThisMonth);
                 return;
             }
             int rank = 1;
@@ -129,7 +127,7 @@ namespace geetRPCS.Services
             }
             var totalMonth = appsThisMonth.Sum(x => x.Item2.TotalSeconds);
             sb.AppendLine($"{LanguageManager.Current.StatsTotal} {FormatTimeSpan(TimeSpan.FromSeconds(totalMonth))}");
-            MessageBox.Show(sb.ToString(), LanguageManager.Current.MenuThisMonth, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            InfoDialog.Show(sb.ToString(), LanguageManager.Current.MenuThisMonth);
         }
 
         public void ShowAllTime()
@@ -137,8 +135,7 @@ namespace geetRPCS.Services
             var allTimeTop = _statistics.GetTopAppsAllTime(10);
             if (allTimeTop.Count == 0)
             {
-                MessageBox.Show(LanguageManager.Current.StatsNoData, LanguageManager.Current.MenuAllTime,
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                InfoDialog.Show(LanguageManager.Current.StatsNoData, LanguageManager.Current.MenuAllTime);
                 return;
             }
             var sb = new StringBuilder();
@@ -154,7 +151,7 @@ namespace geetRPCS.Services
             }
             sb.AppendLine($"{LanguageManager.Current.StatsTotalTracked} {FormatTimeSpan(_statistics.TotalTrackedTime)}");
             sb.AppendLine($"{LanguageManager.Current.StatsTotalApps} {_statistics.AppUsage.Count}");
-            MessageBox.Show(sb.ToString(), LanguageManager.Current.MenuAllTime, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            InfoDialog.Show(sb.ToString(), LanguageManager.Current.MenuAllTime);
         }
 
         public async void ExportAsync(string format)
@@ -169,19 +166,18 @@ namespace geetRPCS.Services
                 string filePath = await _statistics.WriteExportAsync(content, format);
                 if (filePath != null && File.Exists(filePath))
                 {
-                    var result = MessageBox.Show(
+                    if (ConfirmDialog.Show(
                         $"{LanguageManager.Current.StatsExportSuccess}\n\n{Path.GetFileName(filePath)}\n\n{LanguageManager.Current.StatsOpenFolder}",
-                        LanguageManager.Current.AppName, MessageBoxButtons.YesNo, MessageBoxIcon.Information);
-                    if (result == DialogResult.Yes) System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{filePath}\"");
+                        LanguageManager.Current.AppName))
+                        System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{filePath}\"");
                 }
-                else MessageBox.Show(LanguageManager.Current.StatsExportFailed, LanguageManager.Current.AppName,
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                else InfoDialog.Show(LanguageManager.Current.StatsExportFailed, LanguageManager.Current.AppName);
             }
             catch (Exception ex)
             {
                 LogService.Log($"Export error: {ex.Message}", "ERROR", "Stats");
-                MessageBox.Show(string.Format(LanguageManager.Current.ErrorExport, ex.Message),
-                    LanguageManager.Current.AppName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                InfoDialog.Show(string.Format(LanguageManager.Current.ErrorExport, ex.Message),
+                    LanguageManager.Current.AppName);
             }
         }
         #endregion

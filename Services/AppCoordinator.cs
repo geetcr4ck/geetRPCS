@@ -446,14 +446,6 @@ namespace geetRPCS.Services
             }
         }
 
-        public void ResetTimers()
-        {
-            lock (_lock) { _appTimers.Clear(); _currentApp = null; }
-            NarrativeService.ResetAll();
-            MessageBox.Show(LanguageManager.Current.MsgTimersReset, LanguageManager.Current.AppName,
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
         // ----------------------------------------------------------------
         // Manage apps / overrides / settings
         // ----------------------------------------------------------------
@@ -488,10 +480,20 @@ namespace geetRPCS.Services
             catch (Exception ex) { LogService.Log($"Error saving settings: {ex.Message}", "ERROR", "AppCoordinator"); }
         }
 
+        /// <summary>Discord client IDs are snowflakes: 17-20 decimal digits. Single source of truth, shared by the Change Application ID dialog and the save path.</summary>
+        public static bool IsValidApplicationId(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return false;
+            string s = id.Trim();
+            if (s.Length < 17 || s.Length > 20) return false;
+            foreach (char c in s) if (c < '0' || c > '9') return false;
+            return true;
+        }
+
         /// <summary>Persists a changed Discord application id to config.json and reloads.</summary>
         public bool ChangeApplicationId(string newId)
         {
-            if (_config?.Discord == null || string.IsNullOrWhiteSpace(newId)) return false;
+            if (_config?.Discord == null || !IsValidApplicationId(newId)) return false;
             string currentId = _config.Discord.ApplicationId;
             if (newId.Trim() == currentId) return false;
             try
@@ -562,7 +564,7 @@ namespace geetRPCS.Services
                 {
                     string json = System.IO.File.ReadAllText(AppPaths.ConfigPath);
                     var cfg = System.Text.Json.JsonSerializer.Deserialize(json, Utils.JsonContext.Default.Config);
-                    if (cfg?.Discord != null && !string.IsNullOrEmpty(cfg.Discord.ApplicationId))
+                    if (cfg?.Discord != null && IsValidApplicationId(cfg.Discord.ApplicationId))
                     {
                         LogService.Log("Config loaded", "INFO", "AppCoordinator");
                         return cfg;

@@ -59,7 +59,7 @@ class Program : ApplicationContext, IAppHost
         {
             if (!createdNew)
             {
-                MessageBox.Show(LanguageManager.Current.ErrorAlreadyRunning, "geetRPCS",
+                MessageBox.Show(LanguageManager.Current.ErrorAlreadyRunning, LanguageManager.Current.AppName,
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
@@ -76,8 +76,8 @@ class Program : ApplicationContext, IAppHost
             catch (Exception ex)
             {
                 Log($"Fatal error: {ex.Message}", "ERROR", "Fatal");
-                MessageBox.Show($"Application failed to start:\n\n{ex.Message}\n\nCheck geetRPCS.log for details.",
-                    "geetRPCS - Fatal Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(string.Format(LanguageManager.Current.ErrorStartupFatal, ex.Message),
+                    LanguageManager.Current.DialogFatalTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
@@ -91,7 +91,7 @@ class Program : ApplicationContext, IAppHost
             _coordinator = new AppCoordinator(this);
             if (!_coordinator.Prepare())
             {
-                MessageBox.Show("Unable to load configuration.", "geetRPCS - Error",
+                MessageBox.Show(LanguageManager.Current.ErrorUnableLoadConfig, LanguageManager.Current.DialogErrorTitle,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();
                 return;
@@ -114,8 +114,8 @@ class Program : ApplicationContext, IAppHost
         catch (Exception ex)
         {
             Log($"INIT ERROR: {ex}");
-            MessageBox.Show($"Failed to start geetRPCS:\n\n{ex.Message}\n\nCheck geetRPCS.log for details.",
-                "geetRPCS - Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(string.Format(LanguageManager.Current.ErrorStartupFatal, ex.Message),
+                LanguageManager.Current.DialogErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
             Application.Exit();
         }
     }
@@ -424,4 +424,4 @@ class Program : ApplicationContext, IAppHost
         catch { }
         finally { Application.Exit(); }
     }
-}
+}

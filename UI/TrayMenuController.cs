@@ -83,7 +83,7 @@ namespace geetRPCS.UI
                 menu.Items.Add(telemetryItem);
 
                 // Auto-Update toggle
-                var autoUpdateItem = new ToolStripMenuItem("🔄 Auto-Update") { Checked = SettingsService.Instance.AutoUpdateEnabled };
+                var autoUpdateItem = new ToolStripMenuItem(LanguageManager.Current.MenuAutoUpdate ?? "🔄 Auto-Update") { Checked = SettingsService.Instance.AutoUpdateEnabled };
                 autoUpdateItem.Click += async (s, args) =>
                 {
                     bool newState = !SettingsService.Instance.AutoUpdateEnabled;
@@ -91,8 +91,8 @@ namespace geetRPCS.UI
                     await SettingsService.SaveAsync();
                     ((ToolStripMenuItem)s!).Checked = newState;
                     _shell.ShowBalloonTip(LanguageManager.Current.AppName,
-                        newState ? "Auto-update enabled. App will update automatically."
-                                 : "Auto-update disabled. You'll be notified about updates.",
+                        newState ? (LanguageManager.Current.MsgAutoUpdateEnabled ?? "Auto-update enabled. App will update automatically.")
+                                 : (LanguageManager.Current.MsgAutoUpdateDisabled ?? "Auto-update disabled. You'll be notified about updates."),
                         ToolTipIcon.Info);
                     LogService.Log($"Auto-update {(newState ? "enabled" : "disabled")}", "INFO", "TrayMenu");
                 };
@@ -208,8 +208,7 @@ namespace geetRPCS.UI
             statsMenu.DropDownItems.Add(new ToolStripSeparator());
             statsMenu.DropDownItems.Add(LanguageManager.Current.MenuResetStats, null, async (_, __) =>
             {
-                if (MessageBox.Show(LanguageManager.Current.DialogResetStatsMessage, LanguageManager.Current.DialogResetStatsTitle,
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                if (ConfirmDialog.Show(LanguageManager.Current.DialogResetStatsMessage, LanguageManager.Current.DialogResetStatsTitle))
                 {
                     await _coordinator.Stats.ResetAsync();
                     _shell.ShowBalloonTip(LanguageManager.Current.AppName, LanguageManager.Current.MsgStatsReset, ToolTipIcon.Info);
@@ -230,14 +229,14 @@ namespace geetRPCS.UI
             quickActionsMenu.DropDownItems.Add(new ToolStripSeparator());
             quickActionsMenu.DropDownItems.Add(LanguageManager.Current.MenuReloadAll, null, (_, __) =>
             {
-                if (MessageBox.Show(LanguageManager.Current.DialogReloadMessage, LanguageManager.Current.DialogReloadTitle,
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes) _coordinator.ReloadConfig();
+                if (ConfirmDialog.Show(LanguageManager.Current.DialogReloadMessage, LanguageManager.Current.DialogReloadTitle))
+                    _coordinator.ReloadConfig();
             });
 
             quickActionsMenu.DropDownItems.Add(new ToolStripSeparator());
-            var shortcutMenu = new ToolStripMenuItem("➕ Manage Shortcuts");
+            var shortcutMenu = new ToolStripMenuItem(LanguageManager.Current.MenuManageShortcuts ?? "➕ Manage Shortcuts");
 
-            var desktopShortcutItem = new ToolStripMenuItem("Desktop Shortcut")
+            var desktopShortcutItem = new ToolStripMenuItem(LanguageManager.Current.MenuShortcutDesktop ?? "Desktop Shortcut")
             { Checked = ShortcutManager.IsDesktopShortcutExists() };
             desktopShortcutItem.Click += async (_, __) =>
             {
@@ -245,11 +244,10 @@ namespace geetRPCS.UI
                 {
                     if (ShortcutManager.IsDesktopShortcutExists())
                     {
-                        if (MessageBox.Show("Remove desktop shortcut?", LanguageManager.Current.AppName,
-                            MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                        if (ConfirmDialog.Show(LanguageManager.Current.DialogRemoveDesktopShortcut ?? "Remove desktop shortcut?", LanguageManager.Current.AppName))
                         {
                             ShortcutManager.RemoveDesktopShortcut();
-                            _shell.ShowBalloonTip(LanguageManager.Current.AppName, "Desktop shortcut removed", ToolTipIcon.Info);
+                            _shell.ShowBalloonTip(LanguageManager.Current.AppName, LanguageManager.Current.MsgShortcutDesktopRemoved ?? "Desktop shortcut removed", ToolTipIcon.Info);
                             SettingsService.Instance.ShortcutPreferences.DesktopShortcut = false;
                             await SettingsService.SaveAsync();
                         }
@@ -258,7 +256,7 @@ namespace geetRPCS.UI
                     {
                         ShortcutManager.CreateDesktopShortcut();
                         ShortcutManager.RefreshIconCache();
-                        _shell.ShowBalloonTip(LanguageManager.Current.AppName, "Desktop shortcut created", ToolTipIcon.Info);
+                        _shell.ShowBalloonTip(LanguageManager.Current.AppName, LanguageManager.Current.MsgShortcutDesktopCreated ?? "Desktop shortcut created", ToolTipIcon.Info);
                         SettingsService.Instance.ShortcutPreferences.DesktopShortcut = true;
                         SettingsService.Instance.ShortcutPreferences.PreferenceSaved = true;
                         await SettingsService.SaveAsync();
@@ -268,13 +266,13 @@ namespace geetRPCS.UI
                 catch (Exception ex)
                 {
                     LogService.Log($"Desktop shortcut error: {ex.Message}", "ERROR", "TrayMenu");
-                    MessageBox.Show($"Failed to manage desktop shortcut: {ex.Message}",
+                    MessageBox.Show(LanguageManager.Current.ErrorManageDesktopShortcut + ex.Message,
                         LanguageManager.Current.AppName, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             };
             shortcutMenu.DropDownItems.Add(desktopShortcutItem);
 
-            var startMenuShortcutItem = new ToolStripMenuItem("Start Menu Shortcut")
+            var startMenuShortcutItem = new ToolStripMenuItem(LanguageManager.Current.MenuShortcutStartMenu ?? "Start Menu Shortcut")
             { Checked = ShortcutManager.IsStartMenuShortcutExists() };
             startMenuShortcutItem.Click += async (_, __) =>
             {
@@ -282,11 +280,10 @@ namespace geetRPCS.UI
                 {
                     if (ShortcutManager.IsStartMenuShortcutExists())
                     {
-                        if (MessageBox.Show("Remove Start Menu shortcut?", LanguageManager.Current.AppName,
-                            MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                        if (ConfirmDialog.Show(LanguageManager.Current.DialogRemoveStartMenuShortcut ?? "Remove Start Menu shortcut?", LanguageManager.Current.AppName))
                         {
                             ShortcutManager.RemoveStartMenuShortcut();
-                            _shell.ShowBalloonTip(LanguageManager.Current.AppName, "Start Menu shortcut removed", ToolTipIcon.Info);
+                            _shell.ShowBalloonTip(LanguageManager.Current.AppName, LanguageManager.Current.MsgShortcutStartMenuRemoved ?? "Start Menu shortcut removed", ToolTipIcon.Info);
                             SettingsService.Instance.ShortcutPreferences.StartMenuShortcut = false;
                             await SettingsService.SaveAsync();
                         }
@@ -295,7 +292,7 @@ namespace geetRPCS.UI
                     {
                         ShortcutManager.CreateStartMenuShortcut();
                         ShortcutManager.RefreshIconCache();
-                        _shell.ShowBalloonTip(LanguageManager.Current.AppName, "Start Menu shortcut created", ToolTipIcon.Info);
+                        _shell.ShowBalloonTip(LanguageManager.Current.AppName, LanguageManager.Current.MsgShortcutStartMenuCreated ?? "Start Menu shortcut created", ToolTipIcon.Info);
                         SettingsService.Instance.ShortcutPreferences.StartMenuShortcut = true;
                         SettingsService.Instance.ShortcutPreferences.PreferenceSaved = true;
                         await SettingsService.SaveAsync();
@@ -305,7 +302,7 @@ namespace geetRPCS.UI
                 catch (Exception ex)
                 {
                     LogService.Log($"Start Menu shortcut error: {ex.Message}", "ERROR", "TrayMenu");
-                    MessageBox.Show($"Failed to manage Start Menu shortcut: {ex.Message}",
+                    MessageBox.Show(LanguageManager.Current.ErrorManageStartMenuShortcut + ex.Message,
                         LanguageManager.Current.AppName, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             };
@@ -342,9 +339,8 @@ namespace geetRPCS.UI
             {
                 if (!File.Exists(AppPaths.ConfigPath))
                 {
-                    var result = MessageBox.Show(LanguageManager.Current.DialogConfigNotFound,
-                        LanguageManager.Current.AppName, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                    if (result == DialogResult.Yes) CreateDefaultConfigFile();
+                    if (ConfirmDialog.Show(LanguageManager.Current.DialogConfigNotFound, LanguageManager.Current.AppName))
+                        CreateDefaultConfigFile();
                     else return;
                 }
                 OpenFileWithEditor(AppPaths.ConfigPath, "config.json");
@@ -352,7 +348,7 @@ namespace geetRPCS.UI
             catch (Exception ex)
             {
                 LogService.Log($"Error opening config: {ex.Message}", "ERROR", "TrayMenu");
-                MessageBox.Show($"Error: {ex.Message}", LanguageManager.Current.AppName,
+                MessageBox.Show($"{LanguageManager.Current.ErrorPrefix}{ex.Message}", LanguageManager.Current.AppName,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -398,9 +394,8 @@ namespace geetRPCS.UI
             catch (Exception ex)
             {
                 LogService.Log($"Failed to open {fileName}: {ex.Message}", "ERROR", "TrayMenu");
-                var result = MessageBox.Show(LanguageManager.Current.DialogOpenWithNotepad, LanguageManager.Current.AppName,
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                if (result == DialogResult.Yes) System.Diagnostics.Process.Start("notepad.exe", filePath);
+                if (ConfirmDialog.Show(LanguageManager.Current.DialogOpenWithNotepad, LanguageManager.Current.AppName))
+                    System.Diagnostics.Process.Start("notepad.exe", filePath);
             }
         }
 
@@ -409,93 +404,229 @@ namespace geetRPCS.UI
             string tutorialUrl = LanguageManager.Current.UrlTutorial;
             string assetsUrl = "https://github.com/geetcr4ck/geetRPCS/raw/main/AssetPack.zip";
             string defaultAppId = "1433700335863726183";
+
+            // Discord-style dark palette (matches ManageAppsForm).
+            Color bg = Color.FromArgb(47, 49, 54);
+            Color inputBg = Color.FromArgb(30, 31, 34);
+            Color textColor = Color.FromArgb(255, 255, 255);
+            Color blurple = Color.FromArgb(88, 101, 242);
+            Color blurpleHover = Color.FromArgb(71, 82, 196);
+            Color blurpleDown = Color.FromArgb(60, 69, 165);
+            Color btnBg = Color.FromArgb(78, 80, 88);
+            Color btnHover = Color.FromArgb(109, 111, 120);
+            Color btnDown = Color.FromArgb(92, 94, 102);
+            Color warnBg = Color.FromArgb(44, 41, 33);
+            Color warnText = Color.FromArgb(240, 178, 50);
+            Color warnAccent = Color.FromArgb(250, 166, 26);
+            Color errorText = Color.FromArgb(240, 71, 71); // Discord red #F04747
+
+            // The localized message is "instruction\n\nWARNING: ...". Split it so the
+            // warning renders as its own callout instead of a wall of text.
+            string description = text, warning = null;
+            int split = text.IndexOf("\n\n", StringComparison.Ordinal);
+            if (split >= 0)
+            {
+                description = text.Substring(0, split).Trim();
+                warning = text.Substring(split + 2).Trim();
+            }
+
+            const int PAD = 24;
+            const int CLIENT_W = 480;
+            Font font = new Font("Segoe UI", 9);
+            Font inputFont = new Font("Segoe UI", 10);
+
             using Form prompt = new Form()
             {
-                Width = 500,
-                Height = 280,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
                 Text = caption,
                 StartPosition = FormStartPosition.CenterScreen,
                 MaximizeBox = false,
                 MinimizeBox = false,
-                BackColor = Color.FromArgb(47, 49, 54),
-                ForeColor = Color.White
+                ShowInTaskbar = false,
+                BackColor = bg,
+                ForeColor = textColor
             };
-            Label textLabel = new Label()
+            try
             {
-                Left = 20,
-                Top = 20,
-                Width = 440,
-                Text = text,
+                string iconPath = Utils.AppPaths.IconPath;
+                if (File.Exists(iconPath)) prompt.Icon = new Icon(iconPath);
+            }
+            catch { }
+
+            int contentW = CLIENT_W - 2 * PAD;
+            int y = PAD;
+
+            // 1. Description
+            var textLabel = new Label()
+            {
+                Left = PAD,
+                Top = y,
+                Width = contentW,
+                Text = description,
                 AutoSize = false,
-                Height = 60,
-                Font = new Font("Segoe UI", 9)
+                Font = font,
+                ForeColor = textColor
             };
-            TextBox textBox = new TextBox()
+            textLabel.Height = TextRenderer.MeasureText(description, font, new Size(contentW, 0), TextFormatFlags.WordBreak).Height + 2;
+            prompt.Controls.Add(textLabel);
+            y += textLabel.Height + 14;
+
+            // 2. Warning callout (amber accent bar + tinted panel)
+            if (!string.IsNullOrEmpty(warning))
             {
-                Left = 20,
-                Top = 80,
-                Width = 440,
+                int warnTextW = contentW - 4 - 24; // minus accent bar and label padding
+                int warnH = TextRenderer.MeasureText(warning, font, new Size(warnTextW, 0), TextFormatFlags.WordBreak).Height + 18;
+                var warnPanel = new Panel
+                {
+                    Left = PAD,
+                    Top = y,
+                    Width = contentW,
+                    Height = warnH,
+                    BackColor = warnBg
+                };
+                var warnAccentBar = new Panel { Dock = DockStyle.Left, Width = 4, BackColor = warnAccent };
+                var warnLabel = new Label
+                {
+                    Dock = DockStyle.Fill,
+                    Text = warning,
+                    Font = font,
+                    ForeColor = warnText,
+                    AutoSize = false,
+                    Padding = new Padding(12, 9, 12, 9)
+                };
+                warnPanel.Controls.Add(warnAccentBar);
+                warnPanel.Controls.Add(warnLabel);
+                prompt.Controls.Add(warnPanel);
+                y += warnH + 14;
+            }
+
+            // 3. Input (pre-filled with the current ID)
+            var textBox = new TextBox()
+            {
+                Left = PAD,
+                Top = y,
+                Width = contentW,
                 Text = defaultValue,
-                Font = new Font("Segoe UI", 10)
+                Font = inputFont,
+                BackColor = inputBg,
+                ForeColor = textColor,
+                BorderStyle = BorderStyle.FixedSingle,
+                TabIndex = 0
             };
-            LinkLabel lnkTut = new LinkLabel()
+            prompt.Controls.Add(textBox);
+            y += textBox.Height + 4;
+
+            // Inline validation error (shown only while the input is invalid)
+            var lblError = new Label()
+            {
+                Left = PAD,
+                Top = y,
+                Width = contentW,
+                Height = 15,
+                Text = LanguageManager.Current.ErrorInvalidAppId ?? "Application ID must be 17-20 digits (numbers only).",
+                Font = new Font("Segoe UI", 8),
+                ForeColor = errorText,
+                Visible = false
+            };
+            prompt.Controls.Add(lblError);
+            y += 15 + 5;
+
+            // 4. Helper links (tutorial + asset pack)
+            var links = new FlowLayoutPanel
+            {
+                Left = PAD,
+                Top = y,
+                Width = contentW,
+                Height = 22,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                BackColor = Color.Transparent
+            };
+            var lnkTut = new LinkLabel()
             {
                 Text = LanguageManager.Current.LinkTutorial,
-                Left = 20,
-                Top = 120,
                 AutoSize = true,
-                LinkColor = Color.FromArgb(88, 101, 242),
+                LinkColor = blurple,
                 ActiveLinkColor = Color.FromArgb(115, 125, 255),
-                Font = new Font("Segoe UI", 9)
+                Font = font
             };
             lnkTut.LinkClicked += (s, e) => OpenUrl(tutorialUrl);
-            LinkLabel lnkAssets = new LinkLabel()
+            var lnkAssets = new LinkLabel()
             {
                 Text = LanguageManager.Current.LinkDownloadAssets,
-                Left = 20,
-                Top = 145,
                 AutoSize = true,
-                LinkColor = Color.FromArgb(88, 101, 242),
+                LinkColor = blurple,
                 ActiveLinkColor = Color.FromArgb(115, 125, 255),
-                Font = new Font("Segoe UI", 9)
+                Font = font,
+                Margin = new Padding(16, 0, 0, 0)
             };
             lnkAssets.LinkClicked += (s, e) => OpenUrl(assetsUrl);
-            var btnReset = new System.Windows.Forms.Button()
+            links.Controls.Add(lnkTut);
+            links.Controls.Add(lnkAssets);
+            prompt.Controls.Add(links);
+            y += links.Height + 18;
+
+            // 5. Action row (right-aligned): Cancel | Reset Default | Save
+            int btnW = 104, btnH = 32, gap = 8;
+            var btnCancel = MakeDialogButton(LanguageManager.Current.BtnCancel ?? "Cancel", btnBg, btnHover, btnDown, font);
+            btnCancel.Bounds = new Rectangle(CLIENT_W - PAD - 3 * btnW - 2 * gap, y, btnW, btnH);
+            btnCancel.DialogResult = DialogResult.Cancel;
+            btnCancel.TabIndex = 1;
+            var btnReset = MakeDialogButton(LanguageManager.Current.BtnResetDefault ?? "Reset Default", btnBg, btnHover, btnDown, font);
+            btnReset.Bounds = new Rectangle(CLIENT_W - PAD - 2 * btnW - gap, y, btnW, btnH);
+            btnReset.TabIndex = 2;
+            btnReset.Click += (s, e) =>
             {
-                Text = "Reset Default",
-                Left = 210,
-                Width = 120,
-                Top = 180,
-                BackColor = Color.FromArgb(79, 84, 92),
-                FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.White,
-                Cursor = Cursors.Hand
+                textBox.Text = defaultAppId;
+                textBox.Focus();
+                textBox.SelectAll();
             };
-            btnReset.FlatAppearance.BorderSize = 0;
-            btnReset.Click += (s, e) => { textBox.Text = defaultAppId; };
-            var confirmation = new System.Windows.Forms.Button()
-            {
-                Text = LanguageManager.Current.BtnSave ?? "Save",
-                Left = 340,
-                Width = 120,
-                Top = 180,
-                DialogResult = DialogResult.OK,
-                BackColor = Color.FromArgb(88, 101, 242),
-                FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.White,
-                Cursor = Cursors.Hand
-            };
-            confirmation.FlatAppearance.BorderSize = 0;
-            confirmation.Click += (sender, e) => { prompt.Close(); };
-            prompt.Controls.Add(textLabel);
-            prompt.Controls.Add(textBox);
-            prompt.Controls.Add(lnkTut);
-            prompt.Controls.Add(lnkAssets);
+            var btnSave = MakeDialogButton(LanguageManager.Current.BtnSave ?? "Save", blurple, blurpleHover, blurpleDown, font);
+            btnSave.Bounds = new Rectangle(CLIENT_W - PAD - btnW, y, btnW, btnH);
+            btnSave.DialogResult = DialogResult.OK;
+            btnSave.TabIndex = 3;
+            prompt.Controls.Add(btnCancel);
             prompt.Controls.Add(btnReset);
-            prompt.Controls.Add(confirmation);
-            prompt.AcceptButton = confirmation;
+            prompt.Controls.Add(btnSave);
+
+            // Save is enabled only for a valid, changed ID; otherwise show an inline error.
+            Action refreshSave = () =>
+            {
+                string val = textBox.Text?.Trim() ?? "";
+                bool valid = AppCoordinator.IsValidApplicationId(val);
+                bool changed = val.Length > 0 && val != (defaultValue ?? "").Trim();
+                btnSave.Enabled = valid && changed;
+                lblError.Visible = val.Length > 0 && !valid;
+            };
+            textBox.TextChanged += (s, e) => refreshSave();
+            refreshSave();
+
+            prompt.AcceptButton = btnSave;
+            prompt.CancelButton = btnCancel;
+            prompt.Shown += (s, e) =>
+            {
+                textBox.Focus();
+                textBox.SelectAll();
+            };
+
+            prompt.ClientSize = new Size(CLIENT_W, y + btnH + PAD);
             return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "";
+        }
+
+        /// <summary>Flat dark-theme button with hover/pressed states (Discord style).</summary>
+        private static Button MakeDialogButton(string text, Color bg, Color hover, Color down, Font font)
+        {
+            return new Button
+            {
+                Text = text,
+                Font = font,
+                ForeColor = Color.White,
+                BackColor = bg,
+                FlatStyle = FlatStyle.Flat,
+                FlatAppearance = { BorderSize = 0, MouseOverBackColor = hover, MouseDownBackColor = down },
+                Cursor = Cursors.Hand,
+                UseVisualStyleBackColor = false
+            };
         }
 
         private void OpenUrl(string url)
@@ -515,4 +646,4 @@ namespace geetRPCS.UI
         }
         #endregion
     }
-}
+}

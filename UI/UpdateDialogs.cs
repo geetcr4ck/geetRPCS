@@ -33,8 +33,8 @@ namespace geetRPCS.UI
 
         public static void ShowEnhancedUpdateDialog(GitHubRelease release)
         {
-            string latestVersion = release.TagName?.TrimStart('v') ?? "Unknown";
-            string releaseNotes = release.Body ?? "No release notes available.";
+            string latestVersion = release.TagName?.TrimStart('v') ?? Services.LanguageManager.Current.UpdateVersionUnknown;
+            string releaseNotes = release.Body ?? Services.LanguageManager.Current.UpdateNoReleaseNotes;
             string downloadUrl = release.HtmlUrl ?? "https://github.com/geetcr4ck/geetRPCS/releases";
             DateTime publishedDate = release.PublishedAt;
 
@@ -198,7 +198,7 @@ namespace geetRPCS.UI
                             if (dialog.IsDisposed) return;
                             Action updateUI = () =>
                             {
-                                MessageBox.Show(error, "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                InfoDialog.Show(error, Services.LanguageManager.Current.UpdateErrorTitle);
                                 updateNowBtn.Visible = true;
                                 progressBar.Visible = false;
                                 statusLabel.Visible = false;
@@ -254,7 +254,7 @@ namespace geetRPCS.UI
                     progressBar.Visible = false;
                     cancelBtn.Visible = false;
                     statusLabel.Visible = true;
-                    statusLabel.Text = "Error: " + ex.Message;
+                    statusLabel.Text = Services.LanguageManager.Current.ErrorPrefix + ex.Message;
                 }
             };
 
@@ -350,7 +350,7 @@ namespace geetRPCS.UI
             contentPanel.Controls.Add(versionBox);
             var infoLabel = new Label
             {
-                Text = "A new update for supported applications is available!\nThis update doesn't require restarting geetRPCS.",
+                Text = Services.LanguageManager.Current.UpdateAppsAvailableBody,
                 Font = new Font("Segoe UI", 9),
                 ForeColor = Color.FromArgb(185, 187, 190),
                 Location = new Point(20, 110),
@@ -387,7 +387,7 @@ namespace geetRPCS.UI
             contentPanel.Controls.Add(versionBox);
             var infoLabel = new Label
             {
-                Text = "New witty texts are available for your Discord presence!\nThis update doesn't require restarting geetRPCS.",
+                Text = Services.LanguageManager.Current.UpdateWittyAvailableBody,
                 Font = new Font("Segoe UI", 9),
                 ForeColor = Color.FromArgb(185, 187, 190),
                 Location = new Point(20, 110),
@@ -442,7 +442,7 @@ namespace geetRPCS.UI
         #region ----- UI Helpers -----
         internal static string FormatReleaseNotes(string notes)
         {
-            if (string.IsNullOrEmpty(notes)) return "No release notes available.";
+            if (string.IsNullOrEmpty(notes)) return Services.LanguageManager.Current.UpdateNoReleaseNotes;
             if (notes.Length > 800)
             {
                 notes = notes.Substring(0, 800) + "...\n\n[View full changelog on GitHub]";

@@ -28,6 +28,7 @@
   </a>
   <img src="https://img.shields.io/badge/.NET_8.0-512BD4?style=flat&logo=dotnet&logoColor=white" alt=".NET 8"/>
   <img src="https://img.shields.io/badge/Windows-0078D6?style=flat&logo=windows&logoColor=white" alt="Windows"/>
+  <img src="https://img.shields.io/github/actions/workflow/status/geetcr4ck/geetRPCS/ci.yml?style=flat&label=CI&color=success" alt="CI"/>
   <a href="https://zread.ai/geetcr4ck/geetRPCS">
     <img src="https://img.shields.io/badge/Ask_Zread-_.svg?style=flat&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDRLjk2MTU2QzUuMzE1MDIgNS42MDAxIDUuNjAxNTYgNS4zMTM1NiA1LjYwMTU2IDQuOTYxMDFWMi4yNDAxQzUuNjAxNTYgMS44ODY2NCA1LjMxNTAyIDEuNjAwMSA0Ljk2MTU2IDEuNjAwMVoiIGZpbGw9IiNmZmYiLz4KPHBhdGggZD0iTTRLjk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0LjYxNTZDNS4zMTUwMiAxNC4zOTk5IDUuNjAxNTYgMTQuMTEzNCA1LjYwMTU2IDEzLjc1OTlWMTEuMDM5OUM1LjYwMTU2IDEwLjY4NjQgNS4zMTM1MiAxMC4zOTk5IDQuOTYxNTYgMTAuMzk5OVoiIGZpbGw9IiNmZmYiLz4KPHBhdGggZD0iTTEzLjc1ODQgMS42MDAxSDExLjAzODRDMTAuNjg1IDEuNjAwMSAxMC4zOTg0IDEuODg2NjQgMTAuMzk4NCAyLjI0MDFWNC45NjAxQzEwLjM5ODQgNS4zMTM1NiAxMC42ODUgNS42MDAxIDExLjAzODQgNS42MDAxSDEzLjc1ODRDMTQuMTExOSA1LjYwMDEgMTQuMzk4NCA1LjMxMzU2IDE0LjM5OTkgNC45NjAxVjIuMjQwMUMxNC4zOTg0IDEuODg2NjQgMTQuMTExOSAxLjYwMDEgMTMuNzU4NCAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDRMNCAxMlpFIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff" alt="zread"/>
   </a>
@@ -38,7 +39,9 @@
   <a href="#-features">Fitur</a> •
   <a href="#-supported-apps">Aplikasi yang Didukung</a> •
   <a href="#%EF%B8%8F-configuration">Konfigurasi</a> •
-  <a href="#-faq">FAQ</a>
+  <a href="#-faq">FAQ</a> •
+  <a href="CHANGELOG.md">📜 Changelog</a> •
+  <a href="RELEASE/releasenotes.md">📝 Catatan Rilis</a>
 </p>
 
 ---
@@ -146,6 +149,12 @@ dotnet publish -c Release -r win-x64 -p:PublishSingleFile=false -p:SelfContained
 ```
 
 > **Lokasi Output:** Executable akan berada di dalam folder `publish/` di dalam direktori project.
+
+**Jalankan test suite** (integritas apps.json + paritas bahasa):
+
+```powershell
+dotnet run --project Tests
+```
 
 </details>
 
@@ -319,6 +328,7 @@ Daripada pesan "Working..." yang membosankan, geetRPCS kini menampilkan **teks j
 |       💬 **Komunikasi**        | Telegram, Slack, WhatsApp, Zoom                                                                                                     |
 | 📈 **Data Science & Analisis** | Orange Data Mining                                                                                                                  |
 |       🔧 **Media Tools**       | HandBrake                                                                                                                           |
+|      🎮 **Game Engine**        | Unity, Unreal Engine, Godot Engine, Roblox Studio                                                                                   |
 
 </details>
 
@@ -443,7 +453,7 @@ Anda sekarang bisa menetapkan **Discord App ID yang berbeda untuk aplikasi terte
     "showTimestamps": true,
     "Assets": {
       "LargeImageKey": "geetrpcs-logo",
-      "LargeImageText": "geetRPCS v1.4.0",
+      "LargeImageText": "geetRPCS v1.4.1",
       "SmallImageKey": "verified",
       "SmallImageText": "Powered by geetRPCS"
     },
@@ -651,7 +661,7 @@ Jika Anda melihat peringatan merah di VirusTotal atau Windows Defender:
 - [x] **Update Otomatis Senyap (v1.3.6) 🆕**
 - [x] **Manajer Shortcut (v1.3.6) 🆕**
 - [x] **Update Jaringan & Reliabilitas (v1.3.9) 🆕**
-- [x] **Update Refactor Arsitektur (v1.4.0) 🆕**
+- [x] **Update Refactor Arsitektur (v1.4.1) 🆕**
 - [ ] Dukungan software lebih banyak
 - [ ] UI Dashboard (WPF/WinUI)
 
@@ -669,5 +679,5 @@ Jika Anda melihat peringatan merah di VirusTotal atau Windows Defender:
 
 <p align="center">
   <sub>Dibuat dengan ❤️ oleh <a href="https://github.com/geetcr4ck">geetcr4ck</a></sub><br/>
-  <sub>geetRPCS v1.4.0 • Apache 2.0 License • 2026</sub>
+  <sub>geetRPCS v1.4.1 • Apache 2.0 License • 2026</sub>
 </p>

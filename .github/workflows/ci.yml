@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build solution
+        run: dotnet build geetRPCS.sln -c Release --nologo
+
+      # Tests validates apps.json integrity, app-ID rules, the telemetry default,
+      # and language parity (every key in en.json must exist in every language
+      # file and template.json). A missing key makes this step fail.
+      - name: Run Tests
+        run: dotnet run --project Tests -c Release
+
+      # Verifies that every relative link in the tracked Markdown docs points to a
+      # file that exists in the repo. Links to gitignored local-only files (e.g.
+      # RELEASE/releasenotes.md, the author's personal notes) are allowed with a
+      # warning; any other missing target fails the build.
+      - name: Check Markdown links
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = $env:GITHUB_WORKSPACE
+          $linkRe = [regex]'(?:href|src)="([^"]+)"|\[[^\]]*\]\(([^)]+)\)'
+          $broken = @()
+          foreach ($f in (git ls-files '*.md')) {
+            $abs = Join-Path $root $f
+            if (-not (Test-Path -LiteralPath $abs)) { continue }
+            $dir = Split-Path $abs
+            $content = Get-Content -LiteralPath $abs -Raw
+            foreach ($m in $linkRe.Matches($content)) {
+              $target = if ($m.Groups[1].Value) { $m.Groups[1].Value } else { $m.Groups[2].Value }
+              if ($target -match '^(https?://|mailto:|data:|tel:)') { continue }
+              if ($target.StartsWith('#')) { continue }
+              $path = ($target -replace '#.*$', '')
+              if ([string]::IsNullOrWhiteSpace($path)) { continue }
+              $full = Join-Path $dir ($path -replace '/', '\')
+              if (Test-Path -LiteralPath $full) { continue }
+              # Missing in the working tree: allowed only if deliberately gitignored
+              # by a specific rule (e.g. RELEASE/releasenotes.md). Blanket globs
+              # like *.md still count as broken links.
+              $rule = ''
+              $out = & git check-ignore -v --no-index -- $full 2>$null
+              if ($LASTEXITCODE -eq 0 -and $out) {
+                $rule = (($out -split "`t")[0] -split ':')[-1]
+              }
+              if ($rule -and ($rule.Contains('/') -or $rule -notmatch '[*?[]')) {
+                Write-Output "WARN  $f -> $target (gitignored local-only file: $rule)"
+              } else {
+                Write-Output "FAIL  $f -> $target"
+                $broken += "$f -> $target"
+              }
+            }
+          }
+          if ($broken.Count -gt 0) {
+            Write-Output ""
+            Write-Output "$($broken.Count) broken relative link(s) found:"
+            $broken | ForEach-Object { Write-Output "  $_" }
+            exit 1
+          }
+          Write-Output 'All relative Markdown links resolve.'
+
+      # Ensures the top navigation of both READMEs always links to the changelog
+      # and the release notes, so the docs navigation never silently loses them.
+      - name: Check README navigation links
+        shell: pwsh
+        run: |
+          $required = @{
+            'README.md'    = @('CHANGELOG.md', 'RELEASE/releasenotes.md')
+            'README.id.md' = @('CHANGELOG.md', 'RELEASE/releasenotes.md')
+          }
+          $missing = @()
+          foreach ($file in $required.Keys) {
+            $content = Get-Content -LiteralPath (Join-Path $env:GITHUB_WORKSPACE $file) -Raw
+            foreach ($target in $required[$file]) {
+              if ($content -notmatch ('href="' + [regex]::Escape($target) + '"')) {
+                $missing += "$file -> $target"
+              }
+            }
+          }
+          if ($missing.Count -gt 0) {
+            Write-Output "Missing README navigation link(s):"
+            $missing | ForEach-Object { Write-Output "  $_" }
+            exit 1
+          }
+          Write-Output 'Both READMEs link CHANGELOG.md and RELEASE/releasenotes.md.'

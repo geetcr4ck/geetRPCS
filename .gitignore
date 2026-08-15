@@ -102,10 +102,15 @@ $RECYCLE.BIN/
 !README.md
 !README.id.md
 !PRIVACY.md
+!RELEASE/
 !RELEASE/*.md
 !CONTRIBUTING.md
 !LOCALIZATION.md
+!CHANGELOG.md
 !.github/ISSUE_TEMPLATE/*.md
+
+# Release notes are the author's local-only working notes (see README nav links)
+RELEASE/releasenotes.md
 
 # =========================== Scripts =========================================
 *.bat
@@ -127,3 +132,6 @@ assets/*
 !assets/screenshot-3.png
 !assets/screenshot-4.png
 !assets/discord-assets.png
+
+# Freebuff local workspace
+.freebuff/

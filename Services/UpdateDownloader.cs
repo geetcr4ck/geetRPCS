@@ -20,6 +20,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using static geetRPCS.Services.UpdateChecker;
@@ -139,6 +141,14 @@ namespace geetRPCS.Services
                 if (downloadedFile.Length < asset.Size * 0.95) // Allow 5% tolerance
                 {
                     OnError?.Invoke($"Downloaded file is incomplete ({downloadedFile.Length} vs {asset.Size} bytes)");
+                    CleanupTempFolder();
+                    return null;
+                }
+
+                // Verify SHA-256 checksum against checksums-*.txt from the release
+                // before extracting anything (same trust model as install.ps1).
+                if (!await VerifyChecksumAsync(release, zipPath, asset, ct))
+                {
                     CleanupTempFolder();
                     return null;
                 }
@@ -338,6 +348,125 @@ namespace geetRPCS.Services
             }
         }
 
+        // Downloads checksums-*.txt from the release and verifies the SHA-256 hash of
+        // the downloaded zip before it is extracted. Fails closed: if the release
+        // ships a checksums file but the entry is missing or the hash mismatches,
+        // the update is aborted. If no checksums file exists, verification is skipped
+        // with a warning (mirrors install.ps1 behavior).
+        private async Task<bool> VerifyChecksumAsync(GitHubRelease release, string zipPath, GitHubAsset asset, CancellationToken ct)
+        {
+            try
+            {
+                // Find the checksums asset (checksums-v<tag>.txt)
+                GitHubAsset? checksumsAsset = release.Assets?
+                    .FirstOrDefault(a => a.Name != null &&
+                                         a.Name.StartsWith("checksums-", StringComparison.OrdinalIgnoreCase) &&
+                                         a.Name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase));
+
+                if (checksumsAsset == null)
+                {
+                    Log("No checksums file in release - skipping verification", "WARNING");
+                    return true;
+                }
+
+                OnStatusChanged?.Invoke(LanguageManager.Current.UpdateVerifying ?? "Verifying update integrity...");
+                Log($"Found checksums asset: {checksumsAsset.Name}", "INFO");
+
+                // Download the checksums file with retry + backoff, so a transient
+                // network blip does not abort an otherwise valid update.
+                const int MAX_RETRIES = 3;
+                const int RETRY_BASE_DELAY_MS = 1000;
+
+                string checksumPath = Path.Combine(TempUpdateFolder, checksumsAsset.Name ?? "checksums.txt");
+                byte[]? checksumBytes = null;
+                for (int attempt = 1; attempt <= MAX_RETRIES && checksumBytes == null; attempt++)
+                {
+                    try
+                    {
+                        using var response = await UpdateChecker.SharedHttpClient
+                            .GetAsync(checksumsAsset.BrowserDownloadUrl!, HttpCompletionOption.ResponseHeadersRead, ct);
+                        response.EnsureSuccessStatusCode();
+                        checksumBytes = await response.Content.ReadAsByteArrayAsync(ct);
+                    }
+                    catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                    {
+                        throw; // user cancelled - do not retry
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"Checksums download attempt {attempt}/{MAX_RETRIES} failed: {ex.Message}",
+                            attempt < MAX_RETRIES ? "WARNING" : "ERROR");
+                        if (attempt < MAX_RETRIES)
+                            await Task.Delay(RETRY_BASE_DELAY_MS * attempt, ct); // 1s, 2s backoff
+                    }
+                }
+
+                if (checksumBytes == null)
+                {
+                    string error = $"Failed to download {checksumsAsset.Name}. Aborting for safety.";
+                    Log(error, "ERROR");
+                    OnError?.Invoke(error);
+                    return false;
+                }
+
+                await File.WriteAllBytesAsync(checksumPath, checksumBytes, ct);
+
+                // Compute actual hash of the downloaded zip
+                string actualHash = await ComputeSha256Async(zipPath, ct);
+                string? expectedHash = null;
+
+                // Parse "<hash>  <filename>" lines, tolerating trailing whitespace
+                foreach (string line in File.ReadLines(checksumPath))
+                {
+                    var match = Regex.Match(line, @"^([0-9A-Fa-f]{64})\s+(\S+)\s*$");
+                    if (match.Success && match.Groups[2].Value.Equals(asset.Name, StringComparison.Ordinal))
+                    {
+                        expectedHash = match.Groups[1].Value;
+                        break;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(expectedHash))
+                {
+                    string error = $"Checksum entry for '{asset.Name}' not found in {checksumsAsset.Name}. Aborting for safety.";
+                    Log(error, "ERROR");
+                    OnError?.Invoke(error);
+                    return false;
+                }
+
+                if (!string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase))
+                {
+                    string error = $"SHA-256 verification FAILED for {asset.Name}. The download may be corrupted or tampered with. Aborting.";
+                    Log($"{error}\n  Expected: {expectedHash}\n  Actual:   {actualHash}", "ERROR");
+                    OnError?.Invoke(error);
+                    return false;
+                }
+
+                Log($"SHA-256 verified for {asset.Name}: {actualHash}", "INFO");
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+                Log("Checksum verification cancelled", "INFO");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Log($"Checksum verification failed: {ex.Message}", "ERROR");
+                OnError?.Invoke($"Update verification failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Computes the SHA-256 hash of a file as an uppercase hex string.
+        private static async Task<string> ComputeSha256Async(string path, CancellationToken ct)
+        {
+            await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, BUFFER_SIZE, true);
+            using var sha = SHA256.Create();
+            byte[] hash = await sha.ComputeHashAsync(stream, ct);
+            return Convert.ToHexString(hash);
+        }
+
         // Finds the actual content folder (handles nested folder in ZIP).
         private string FindContentFolder(string extractPath)
         {
@@ -408,11 +537,16 @@ namespace geetRPCS.Services
 
                 string targetPath = AppFolder.TrimEnd('\\', '/');
                 string exeName = "geetRPCS.exe";
-                
+
+                // Deterministic hash over the extracted files; Updater.exe re-computes
+                // it (--checksum) and aborts before copying if anything changed.
+                string sourceChecksum = Utils.DirectoryChecksum.Compute(sourcePath);
+                Log($"Source integrity checksum: {sourceChecksum}", "INFO");
+
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = updaterPath,
-                    Arguments = $"--source \"{sourcePath}\" --target \"{targetPath}\" --exe \"{exeName}\"",
+                    Arguments = $"--source \"{sourcePath}\" --target \"{targetPath}\" --exe \"{exeName}\" --checksum \"{sourceChecksum}\"",
                     UseShellExecute = true,
                     CreateNoWindow = false
                 };
