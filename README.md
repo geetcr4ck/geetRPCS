@@ -267,7 +267,7 @@ geetRPCS features a **Mouse Energy Detector** - a unique feature that analyzes y
 **Example Discord display:**
 
 ```
-Working on FL Studio 2025
+Working on FL Studio 2026
 Untitled - FL Studio | 🔥 Focused
 ```
 
@@ -475,9 +475,9 @@ You can now assign **different Discord App IDs for specific applications** witho
 [
   {
     "process": "FL64",
-    "appName": "FL Studio 2025",
+    "appName": "FL Studio 2026",
     "largeKey": "flstudio",
-    "largeText": "FL Studio 2025",
+    "largeText": "FL Studio 2026",
     "smallKey": "geetrpcs-logo",
     "smallText": "geetRPCS",
     "showTimestamps": false,

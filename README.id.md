@@ -267,7 +267,7 @@ geetRPCS memiliki fitur **Detektor Energi Mouse** - fitur unik yang menganalisis
 **Contoh tampilan di Discord:**
 
 ```
-Working on FL Studio 2025
+Working on FL Studio 2026
 Untitled - FL Studio | 🔥 Focused
 ```
 
@@ -475,9 +475,9 @@ Anda sekarang bisa menetapkan **Discord App ID yang berbeda untuk aplikasi terte
 [
   {
     "process": "FL64",
-    "appName": "FL Studio 2025",
+    "appName": "FL Studio 2026",
     "largeKey": "flstudio",
-    "largeText": "FL Studio 2025",
+    "largeText": "FL Studio 2026",
     "smallKey": "geetrpcs-logo",
     "smallText": "geetRPCS",
     "showTimestamps": false,
