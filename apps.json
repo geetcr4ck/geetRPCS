@@ -1,6 +1,6 @@
 ﻿[
   {
-    "db_version": "1.3.9",
+    "db_version": "1.4.1",
     "_comment": "Database Version - DO NOT REMOVE"
   },
   {
@@ -8,10 +8,10 @@
   },
   {
     "process": "FL64",
-    "appName": "FL Studio 2025",
+    "appName": "FL Studio 2026",
     "clientId": "1461667363102654518",
     "largeKey": "flstudio",
-    "largeText": "FL Studio 2025",
+    "largeText": "FL Studio 2026",
     "smallKey": "geetrpcs-small",
     "customDetails": "{witty_text}",
     "buttons": [
@@ -27,10 +27,10 @@
   },
   {
     "process": "FL",
-    "appName": "FL Studio 2025",
+    "appName": "FL Studio 2026",
     "clientId": "1461667363102654518",
     "largeKey": "flstudio",
-    "largeText": "FL Studio 2025",
+    "largeText": "FL Studio 2026",
     "smallKey": "geetrpcs-small",
     "customDetails": "{witty_text}",
     "buttons": [
