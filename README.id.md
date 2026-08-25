@@ -40,8 +40,7 @@
   <a href="#-aplikasi-yang-didukung">Aplikasi yang Didukung</a> •
   <a href="#%EF%B8%8F-konfigurasi">Konfigurasi</a> •
   <a href="#-faq">FAQ</a> •
-  <a href="CHANGELOG.md">Changelog</a> •
-  <a href="RELEASE/releasenotes.md">Catatan Rilis</a>
+  <a href="CHANGELOG.md">Changelog</a>
 </p>
 
 ---
@@ -121,7 +120,7 @@ Output ada di `publish/portable/` atau `publish/minimal/`.
 - 🪵 Logging terpusat ke `%LOCALAPPDATA%\geetRPCS\geetRPCS.log`
 - 🧹 Trim memori berbasis event (tanpa siklus 30-menit terjadwal), cache gambar preview FIFO 16-entri
 
-> 🆕 **Yang berubah di v1.4.2** — setiap window dan dialog pindah ke Fluent WPF, jendela private/incognito browser terdeteksi otomatis, Custom Rich Presence bisa diedit dari tray, dan CPU/RAM idle turun (working set 78.4 → 69.3 MB, idle CPU 3.83% → 3.29%). Catatan lengkap di [`RELEASE/releasenotes.md`](RELEASE/releasenotes.md).
+> 🆕 **Yang berubah di v1.4.2** — setiap window dan dialog pindah ke Fluent WPF, jendela private/incognito browser terdeteksi otomatis, Custom Rich Presence bisa diedit dari tray, dan CPU/RAM idle turun (working set 78.4 → 69.3 MB, idle CPU 3.83% → 3.29%).
 
 ---
 

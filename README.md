@@ -40,8 +40,7 @@
   <a href="#-supported-apps">Supported Apps</a> •
   <a href="#%EF%B8%8F-configuration">Configuration</a> •
   <a href="#-faq">FAQ</a> •
-  <a href="CHANGELOG.md">Changelog</a> •
-  <a href="RELEASE/releasenotes.md">Release Notes</a>
+  <a href="CHANGELOG.md">Changelog</a>
 </p>
 
 ---
@@ -121,7 +120,7 @@ Output lands in `publish/portable/` or `publish/minimal/`.
 - 🪵 Centralized logging to `%LOCALAPPDATA%\geetRPCS\geetRPCS.log`
 - 🧹 Event-driven memory trims (no scheduled 30-min cycle), FIFO 16-entry preview image cache
 
-> 🆕 **What changed in v1.4.2** — every window and dialog moved to Fluent WPF, browser private/incognito windows are detected automatically, custom Rich Presence is editable from the tray, and idle CPU/RAM dropped (working set 78.4 → 69.3 MB, idle CPU 3.83% → 3.29%). Full notes in [`RELEASE/releasenotes.md`](RELEASE/releasenotes.md).
+> 🆕 **What changed in v1.4.2** — every window and dialog moved to Fluent WPF, browser private/incognito windows are detected automatically, custom Rich Presence is editable from the tray, and idle CPU/RAM dropped (working set 78.4 → 69.3 MB, idle CPU 3.83% → 3.29%).
 
 ---
 
