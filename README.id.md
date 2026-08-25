@@ -40,7 +40,8 @@
   <a href="#-aplikasi-yang-didukung">Aplikasi yang Didukung</a> •
   <a href="#%EF%B8%8F-konfigurasi">Konfigurasi</a> •
   <a href="#-faq">FAQ</a> •
-  <a href="CHANGELOG.md">Changelog</a>
+  <a href="CHANGELOG.md">Changelog</a> •
+  <a href="RELEASE/releasenotes.md">Catatan Rilis</a>
 </p>
 
 ---

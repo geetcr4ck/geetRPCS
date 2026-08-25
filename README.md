@@ -40,7 +40,8 @@
   <a href="#-supported-apps">Supported Apps</a> •
   <a href="#%EF%B8%8F-configuration">Configuration</a> •
   <a href="#-faq">FAQ</a> •
-  <a href="CHANGELOG.md">Changelog</a>
+  <a href="CHANGELOG.md">Changelog</a> •
+  <a href="RELEASE/releasenotes.md">Release Notes</a>
 </p>
 
 ---
