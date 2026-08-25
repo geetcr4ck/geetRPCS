@@ -14,16 +14,16 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using geetRPCS.UI;
+using geetRPCS.UI.Modern;
 
 namespace geetRPCS.Services
 {
-    internal sealed class StatsCoordinator
+    internal sealed class StatsCoordinator : IStatsCoordinator
     {
         private readonly AppStatistics _statistics;
         private readonly object _lock;
@@ -54,104 +54,82 @@ namespace geetRPCS.Services
         public void ShowToday()
         {
             var topApps = _statistics.GetTopAppsToday(10);
-            if (topApps.Count == 0)
+            var vm = new StatisticsViewModel
             {
-                InfoDialog.Show(LanguageManager.Current.StatsNoDataToday, LanguageManager.Current.MenuToday);
-                return;
-            }
-            var sb = new StringBuilder();
-            sb.AppendLine(LanguageManager.Current.StatsTodayTitle);
-            sb.AppendLine("=============\n");
-            int rank = 1;
-            foreach (var (appName, time) in topApps)
-            {
-                sb.AppendLine($"{rank}. {appName}");
-                sb.AppendLine($"   {FormatTimeSpan(time)}\n");
-                rank++;
-            }
-            var totalToday = topApps.Sum(x => x.time.TotalSeconds);
-            sb.AppendLine($"{LanguageManager.Current.StatsTotal} {FormatTimeSpan(TimeSpan.FromSeconds(totalToday))}");
-            InfoDialog.Show(sb.ToString(), LanguageManager.Current.MenuToday);
+                Title = LanguageManager.Current.StatsTodayTitle,
+                EmptyMessage = LanguageManager.Current.StatsNoDataToday
+            };
+            AddRows(vm, topApps);
+            if (topApps.Count > 0)
+                vm.Totals.Add($"{LanguageManager.Current.StatsTotal} " +
+                    FormatTimeSpan(TimeSpan.FromSeconds(topApps.Sum(x => x.time.TotalSeconds))));
+            StatisticsWindow.Show(vm);
         }
 
         public void ShowWeek()
         {
             var weekStart = DateTime.Now.Date.AddDays(-(int)DateTime.Now.DayOfWeek);
-            var sb = new StringBuilder();
-            sb.AppendLine(LanguageManager.Current.StatsWeekTitle);
-            sb.AppendLine($"{LanguageManager.Current.StatsWeekOf} {weekStart:MMM dd, yyyy}");
-            sb.AppendLine("=================\n");
             var appsThisWeek = _statistics.AppUsage.Values
                 .Where(a => a.WeeklyUsage.ContainsKey(weekStart))
                 .Select(a => (a.AppName, a.WeeklyUsage[weekStart]))
                 .OrderByDescending(x => x.Item2).Take(10).ToList();
-            if (appsThisWeek.Count == 0)
+            var vm = new StatisticsViewModel
             {
-                InfoDialog.Show(LanguageManager.Current.StatsNoDataWeek, LanguageManager.Current.MenuThisWeek);
-                return;
-            }
-            int rank = 1;
-            foreach (var (appName, time) in appsThisWeek)
-            {
-                sb.AppendLine($"{rank}. {appName}");
-                sb.AppendLine($"   {FormatTimeSpan(time)}\n");
-                rank++;
-            }
-            var totalWeek = appsThisWeek.Sum(x => x.Item2.TotalSeconds);
-            sb.AppendLine($"{LanguageManager.Current.StatsTotal} {FormatTimeSpan(TimeSpan.FromSeconds(totalWeek))}");
-            InfoDialog.Show(sb.ToString(), LanguageManager.Current.MenuThisWeek);
+                Title = LanguageManager.Current.StatsWeekTitle,
+                Subtitle = $"{LanguageManager.Current.StatsWeekOf} {weekStart:MMM dd, yyyy}",
+                EmptyMessage = LanguageManager.Current.StatsNoDataWeek
+            };
+            AddRows(vm, appsThisWeek);
+            if (appsThisWeek.Count > 0)
+                vm.Totals.Add($"{LanguageManager.Current.StatsTotal} " +
+                    FormatTimeSpan(TimeSpan.FromSeconds(appsThisWeek.Sum(x => x.Item2.TotalSeconds))));
+            StatisticsWindow.Show(vm);
         }
 
         public void ShowMonth()
         {
             var monthStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            var sb = new StringBuilder();
-            sb.AppendLine(LanguageManager.Current.StatsMonthTitle);
-            sb.AppendLine($"{monthStart:MMMM yyyy}");
-            sb.AppendLine("==================\n");
             var appsThisMonth = _statistics.AppUsage.Values
                 .Where(a => a.MonthlyUsage.ContainsKey(monthStart))
                 .Select(a => (a.AppName, a.MonthlyUsage[monthStart]))
                 .OrderByDescending(x => x.Item2).Take(10).ToList();
-            if (appsThisMonth.Count == 0)
+            var vm = new StatisticsViewModel
             {
-                InfoDialog.Show(LanguageManager.Current.StatsNoDataMonth, LanguageManager.Current.MenuThisMonth);
-                return;
-            }
-            int rank = 1;
-            foreach (var (appName, time) in appsThisMonth)
-            {
-                sb.AppendLine($"{rank}. {appName}");
-                sb.AppendLine($"   {FormatTimeSpan(time)}\n");
-                rank++;
-            }
-            var totalMonth = appsThisMonth.Sum(x => x.Item2.TotalSeconds);
-            sb.AppendLine($"{LanguageManager.Current.StatsTotal} {FormatTimeSpan(TimeSpan.FromSeconds(totalMonth))}");
-            InfoDialog.Show(sb.ToString(), LanguageManager.Current.MenuThisMonth);
+                Title = LanguageManager.Current.StatsMonthTitle,
+                Subtitle = $"{monthStart:MMMM yyyy}",
+                EmptyMessage = LanguageManager.Current.StatsNoDataMonth
+            };
+            AddRows(vm, appsThisMonth);
+            if (appsThisMonth.Count > 0)
+                vm.Totals.Add($"{LanguageManager.Current.StatsTotal} " +
+                    FormatTimeSpan(TimeSpan.FromSeconds(appsThisMonth.Sum(x => x.Item2.TotalSeconds))));
+            StatisticsWindow.Show(vm);
         }
 
         public void ShowAllTime()
         {
             var allTimeTop = _statistics.GetTopAppsAllTime(10);
-            if (allTimeTop.Count == 0)
+            var vm = new StatisticsViewModel
             {
-                InfoDialog.Show(LanguageManager.Current.StatsNoData, LanguageManager.Current.MenuAllTime);
-                return;
+                Title = LanguageManager.Current.StatsAllTimeTitle,
+                EmptyMessage = LanguageManager.Current.StatsNoData
+            };
+            AddRows(vm, allTimeTop);
+            if (allTimeTop.Count > 0)
+            {
+                vm.Subtitle = $"{LanguageManager.Current.StatsTrackingSince} " +
+                    $"{_statistics.AppUsage.Values.Min(a => a.FirstUsed):MMM dd, yyyy}";
+                vm.Totals.Add($"{LanguageManager.Current.StatsTotalTracked} {FormatTimeSpan(_statistics.TotalTrackedTime)}");
+                vm.Totals.Add($"{LanguageManager.Current.StatsTotalApps} {_statistics.AppUsage.Count}");
             }
-            var sb = new StringBuilder();
-            sb.AppendLine(LanguageManager.Current.StatsAllTimeTitle);
-            sb.AppendLine($"{LanguageManager.Current.StatsTrackingSince} {_statistics.AppUsage.Values.Min(a => a.FirstUsed):MMM dd, yyyy}");
-            sb.AppendLine("===================\n");
+            StatisticsWindow.Show(vm);
+        }
+
+        private static void AddRows(StatisticsViewModel vm, IEnumerable<(string AppName, TimeSpan Time)> apps)
+        {
             int rank = 1;
-            foreach (var (appName, time) in allTimeTop)
-            {
-                sb.AppendLine($"{rank}. {appName}");
-                sb.AppendLine($"   {FormatTimeSpan(time)}\n");
-                rank++;
-            }
-            sb.AppendLine($"{LanguageManager.Current.StatsTotalTracked} {FormatTimeSpan(_statistics.TotalTrackedTime)}");
-            sb.AppendLine($"{LanguageManager.Current.StatsTotalApps} {_statistics.AppUsage.Count}");
-            InfoDialog.Show(sb.ToString(), LanguageManager.Current.MenuAllTime);
+            foreach (var (appName, time) in apps)
+                vm.Rows.Add(new StatsRow { Rank = rank++, AppName = appName, TimeText = FormatTimeSpan(time) });
         }
 
         public async void ExportAsync(string format)
@@ -166,17 +144,17 @@ namespace geetRPCS.Services
                 string filePath = await _statistics.WriteExportAsync(content, format);
                 if (filePath != null && File.Exists(filePath))
                 {
-                    if (ConfirmDialog.Show(
+                    if (MessageDialog.Confirm(
                         $"{LanguageManager.Current.StatsExportSuccess}\n\n{Path.GetFileName(filePath)}\n\n{LanguageManager.Current.StatsOpenFolder}",
                         LanguageManager.Current.AppName))
                         System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{filePath}\"");
                 }
-                else InfoDialog.Show(LanguageManager.Current.StatsExportFailed, LanguageManager.Current.AppName);
+                else MessageDialog.ShowInfo(LanguageManager.Current.StatsExportFailed, LanguageManager.Current.AppName);
             }
             catch (Exception ex)
             {
                 LogService.Log($"Export error: {ex.Message}", "ERROR", "Stats");
-                InfoDialog.Show(string.Format(LanguageManager.Current.ErrorExport, ex.Message),
+                MessageDialog.ShowInfo(string.Format(LanguageManager.Current.ErrorExport, ex.Message),
                     LanguageManager.Current.AppName);
             }
         }

@@ -25,6 +25,10 @@ namespace geetRPCS.Services
 {
     internal sealed class PresenceBuilder
     {
+        // Language-neutral redaction shown instead of the window title whenever
+        // private mode hides it (manual toggle or auto-detected browser window).
+        private const string HiddenTitle = "**********";
+
         public Config Config { get; set; }
         public bool PrivateMode { get; set; }
 
@@ -64,7 +68,9 @@ namespace geetRPCS.Services
                 Assets = PresenceAssets.ForApp(processName, GetDefaultAssets())
             };
 
-            var appConfig = AppConfigManager.Apps.FirstOrDefault(a => a.Process?.Equals(processName, StringComparison.OrdinalIgnoreCase) == true);
+            // Effective entry = apps.json (or a custom app) with the user's
+            // override applied: timestamps/buttons respect the override here.
+            var appConfig = AppConfigManager.GetEffectiveApp(processName);
             if (appConfig?.ShowTimestamps ?? Config.Discord?.ShowTimestamps ?? true)
                 presence.Timestamps = new Timestamps { Start = started };
 
@@ -78,7 +84,7 @@ namespace geetRPCS.Services
         {
             if (SettingsService.Instance.AppOverrides.TryGetValue(processName, out var ov) && !string.IsNullOrWhiteSpace(ov.Details))
                 return ov.Details;
-            var app = AppConfigManager.Apps.FirstOrDefault(a => a.Process?.Equals(processName, StringComparison.OrdinalIgnoreCase) == true);
+            var app = AppConfigManager.FindExact(processName);
             if (!string.IsNullOrWhiteSpace(app?.CustomDetails)) return app.CustomDetails;
             return Config.Discord?.ActiveDetails ?? "";
         }
@@ -130,8 +136,15 @@ namespace geetRPCS.Services
             {
                 string appName = Placeholders.GetAppName(processName);
                 string title = Placeholders.GetWindowTitle(hWnd);
-                if (PrivateMode && !string.IsNullOrEmpty(title)) title = "********";
-                if (string.IsNullOrEmpty(title) || title.Length <= 3) title = PrivateMode ? "********" : LanguageManager.Current.Working;
+                string accessibleWindowName = PrivateBrowsingDetector.IsSupportedBrowser(processName)
+                    ? Placeholders.GetAccessibleWindowName(hWnd, title)
+                    : "";
+                bool shouldHideTitle = PrivateMode
+                    || PrivateBrowsingDetector.IsPrivateWindow(processName, title, accessibleWindowName);
+                if (shouldHideTitle)
+                    title = HiddenTitle;
+                else if (string.IsNullOrEmpty(title) || title.Length <= 3)
+                    title = LanguageManager.Current.Working;
                 string wittyText = NarrativeService.GetForApp(processName);
                 return format.Replace("{process_name}", processName ?? "")
                     .Replace("{app_name}", appName ?? processName ?? "")

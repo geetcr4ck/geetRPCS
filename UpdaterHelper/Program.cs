@@ -281,7 +281,7 @@ namespace geetRPCS.Updater
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine();
-            Console.WriteLine("  geetRPCS Maintenance Tool v1.4.1");
+            Console.WriteLine("  geetRPCS Maintenance Tool v1.4.2");
             Console.WriteLine("  --------------------------------");
             Console.ResetColor();
             Console.WriteLine();

@@ -26,7 +26,7 @@ namespace geetRPCS.Services
     {
         private const string TELEMETRY_URL = "https://geet-rpcs-tel.vercel.app/api/telemetry";
         private static string APP_VERSION => Utils.AppVersion.VersionText;
-        private const ulong DEVELOPER_ID = 626250175857426452;
+        private const ulong DEVELOPER_ID = 1314871349470167122;
         private static readonly string AppFolder = Utils.AppPaths.UserDataDir;
         private static readonly string TelemetryPath = Utils.AppPaths.TelemetryPath;
 

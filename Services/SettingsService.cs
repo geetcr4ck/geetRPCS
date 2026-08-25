@@ -66,6 +66,11 @@ namespace geetRPCS.Services
             get { lock (_lock) { return _settings.TrayAnimationEnabled; } }
             set { lock (_lock) { _settings.TrayAnimationEnabled = value; } }
         }
+        public string ThemeMode
+        {
+            get { lock (_lock) { return _settings.ThemeMode; } }
+            set { lock (_lock) { _settings.ThemeMode = value; } }
+        }
         public bool TelemetryEnabled
         {
             get { lock (_lock) { return _settings.TelemetryEnabled; } }
@@ -80,6 +85,11 @@ namespace geetRPCS.Services
         {
             get { lock (_lock) { return _settings.AppOverrides; } }
             set { lock (_lock) { _settings.AppOverrides = value; } }
+        }
+        public List<AppConfig> CustomApps
+        {
+            get { lock (_lock) { return _settings.CustomApps; } }
+            set { lock (_lock) { _settings.CustomApps = value; } }
         }
         public string LogLevel
         {

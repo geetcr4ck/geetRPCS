@@ -15,6 +15,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using geetRPCS.Services;
 
 namespace geetRPCS.Utils
 {
@@ -26,12 +27,22 @@ namespace geetRPCS.Utils
         {
             try
             {
-                GC.Collect(2, GCCollectionMode.Optimized, false);
+                long beforeMb = Environment.WorkingSet / (1024 * 1024);
+                // Forced + blocking: every call site runs on a background thread
+                // (Task.Run), so pay the blocking Gen2 collection here and
+                // actually release dead window trees. GCCollectionMode.Optimized
+                // is frequently skipped by the runtime, which left the managed
+                // heap unshrunk while only the working set was paged out.
+                GC.Collect(2, GCCollectionMode.Forced, true);
                 GC.WaitForPendingFinalizers();
+                GC.Collect(2, GCCollectionMode.Forced, true);
                 using (var currentProcess = Process.GetCurrentProcess())
                 {
                     EmptyWorkingSet(currentProcess.Handle);
                 }
+                LogService.Log(
+                    $"TrimMemory: working set {beforeMb}MB -> {Environment.WorkingSet / (1024 * 1024)}MB",
+                    "DEBUG", "MemoryHelper");
             }
             catch (Exception ex)
             {

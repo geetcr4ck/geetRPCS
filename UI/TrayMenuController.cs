@@ -14,7 +14,6 @@
  */
 
 using System;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -22,6 +21,7 @@ using System.Text.Encodings.Web;
 using System.Windows.Forms;
 using geetRPCS.Models;
 using geetRPCS.Services;
+using geetRPCS.UI.Modern;
 using geetRPCS.Utils;
 
 namespace geetRPCS.UI
@@ -29,8 +29,8 @@ namespace geetRPCS.UI
     internal sealed class TrayMenuController
     {
         private readonly NotifyIcon _trayIcon;
-        private readonly AppCoordinator _coordinator;
-        private readonly Program _shell;
+        private readonly ITrayCoordinator _coordinator;
+        private readonly ITrayShell _shell;
         private const int BALLOON_TIMEOUT_MS = 2000;
 
         // Menu item references updated in place (instead of full rebuilds).
@@ -39,8 +39,11 @@ namespace geetRPCS.UI
         public ToolStripMenuItem PreviewMenuItem { get; private set; }
         public ToolStripMenuItem MouseEnergyItem { get; private set; }
         public ToolStripMenuItem TrayAnimationItem { get; private set; }
+        public ToolStripMenuItem ManageAppsMenuItem { get; private set; }
+        public ToolStripMenuItem StatisticsMenuItem { get; private set; }
+        public ToolStripMenuItem ThemeMenuItem { get; private set; }
 
-        public TrayMenuController(NotifyIcon trayIcon, AppCoordinator coordinator, Program shell)
+        public TrayMenuController(NotifyIcon trayIcon, ITrayCoordinator coordinator, ITrayShell shell)
         {
             _trayIcon = trayIcon ?? throw new ArgumentNullException(nameof(trayIcon));
             _coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
@@ -52,44 +55,84 @@ namespace geetRPCS.UI
         {
             try
             {
-                _trayIcon.ContextMenuStrip?.Dispose();
-                var menu = new ContextMenuStrip();
+                if (_trayIcon.ContextMenuStrip != null)
+                {
+                    DisposeMenuImages(_trayIcon.ContextMenuStrip);
+                    _trayIcon.ContextMenuStrip.Dispose();
+                }
+                var menu = new ContextMenuStrip { Renderer = new FluentMenuRenderer() };
 
-                PauseItem = new ToolStripMenuItem(_coordinator.IsPaused ? LanguageManager.Current.MenuResume : LanguageManager.Current.MenuPause)
-                { Checked = _coordinator.IsPaused };
+                PauseItem = CreateMenuItem(_coordinator.IsPaused ? LanguageManager.Current.MenuResume : LanguageManager.Current.MenuPause,
+                    _coordinator.IsPaused ? FluentGlyphs.Play : FluentGlyphs.Pause, isChecked: _coordinator.IsPaused);
                 PauseItem.Click += (_, __) => _coordinator.TogglePause();
                 menu.Items.Add(PauseItem);
 
-                PrivateModeItem = new ToolStripMenuItem(LanguageManager.Current.MenuPrivateMode) { Checked = _coordinator.PrivateMode };
+                PrivateModeItem = CreateMenuItem(LanguageManager.Current.MenuPrivateMode, FluentGlyphs.Lock, isChecked: _coordinator.PrivateMode);
                 PrivateModeItem.Click += (_, __) => _coordinator.TogglePrivateMode();
                 menu.Items.Add(PrivateModeItem);
 
-                MouseEnergyItem = new ToolStripMenuItem(LanguageManager.Current.MenuMouseEnergy) { Checked = SettingsService.Instance.MouseEnergyEnabled };
-                MouseEnergyItem.Click += async (_, __) => await _coordinator.SetMouseEnergyAsync(!SettingsService.Instance.MouseEnergyEnabled);
+                MouseEnergyItem = CreateMenuItem(LanguageManager.Current.MenuMouseEnergy, FluentGlyphs.Mouse,
+                    isChecked: SettingsService.Instance.MouseEnergyEnabled);
+                MouseEnergyItem.Click += async (_, __) =>
+                {
+                    bool newState = !SettingsService.Instance.MouseEnergyEnabled;
+                    SetToggleState(MouseEnergyItem, newState);
+                    await _coordinator.SetMouseEnergyAsync(newState);
+                };
                 menu.Items.Add(MouseEnergyItem);
 
-                TrayAnimationItem = new ToolStripMenuItem(LanguageManager.Current.MenuTrayAnimation) { Checked = SettingsService.Instance.TrayAnimationEnabled };
-                TrayAnimationItem.Click += async (_, __) => await _coordinator.SetTrayAnimationAsync(!SettingsService.Instance.TrayAnimationEnabled);
+                TrayAnimationItem = CreateMenuItem(LanguageManager.Current.MenuTrayAnimation, FluentGlyphs.Palette,
+                    isChecked: SettingsService.Instance.TrayAnimationEnabled);
+                TrayAnimationItem.Click += async (_, __) =>
+                {
+                    bool newState = !SettingsService.Instance.TrayAnimationEnabled;
+                    SetToggleState(TrayAnimationItem, newState);
+                    await _coordinator.SetTrayAnimationAsync(newState);
+                };
                 menu.Items.Add(TrayAnimationItem);
 
-                var telemetryItem = new ToolStripMenuItem(LanguageManager.Current.MenuTelemetry)
-                { Checked = TelemetryService.IsEnabled() };
+                // Theme (Dark / Light / System) - applies live to the ModernWpf windows.
+                // The item text shows the active mode as a suffix (e.g. "🌗 Theme: Dark")
+                // so the current theme is visible without opening the submenu.
+                string themeMode = SettingsService.Instance.ThemeMode;
+                ThemeMenuItem = CreateMenuItem(GetThemeMenuText(themeMode), FluentGlyphs.Moon);
+                var themeMenu = ThemeMenuItem;
+            var themeSystemItem = new ToolStripMenuItem(EscapeMnemonics(LanguageManager.Current.MenuThemeSystem ?? "System"))
+            { Padding = MenuItemPadding };
+            var themeDarkItem = new ToolStripMenuItem(EscapeMnemonics(LanguageManager.Current.MenuThemeDark ?? "Dark"))
+            { Padding = MenuItemPadding };
+            var themeLightItem = new ToolStripMenuItem(EscapeMnemonics(LanguageManager.Current.MenuThemeLight ?? "Light"))
+            { Padding = MenuItemPadding };
+                SetSubmenuSelection(themeSystemItem, themeMode != "Dark" && themeMode != "Light");
+                SetSubmenuSelection(themeDarkItem, themeMode == "Dark");
+                SetSubmenuSelection(themeLightItem, themeMode == "Light");
+                themeSystemItem.Click += (_, __) => SetThemeMode("System", themeSystemItem, themeDarkItem, themeLightItem);
+                themeDarkItem.Click += (_, __) => SetThemeMode("Dark", themeSystemItem, themeDarkItem, themeLightItem);
+                themeLightItem.Click += (_, __) => SetThemeMode("Light", themeSystemItem, themeDarkItem, themeLightItem);
+                themeMenu.DropDownItems.Add(themeSystemItem);
+                themeMenu.DropDownItems.Add(themeDarkItem);
+                themeMenu.DropDownItems.Add(themeLightItem);
+                menu.Items.Add(themeMenu);
+
+                var telemetryItem = CreateMenuItem(LanguageManager.Current.MenuTelemetry, FluentGlyphs.Send,
+                    isChecked: TelemetryService.IsEnabled());
                 telemetryItem.Click += async (s, args) =>
                 {
                     bool newState = !TelemetryService.IsEnabled();
                     await _coordinator.ToggleTelemetryAsync(newState);
-                    ((ToolStripMenuItem)s!).Checked = newState;
+                    SetToggleState((ToolStripMenuItem)s!, newState);
                 };
                 menu.Items.Add(telemetryItem);
 
                 // Auto-Update toggle
-                var autoUpdateItem = new ToolStripMenuItem(LanguageManager.Current.MenuAutoUpdate ?? "🔄 Auto-Update") { Checked = SettingsService.Instance.AutoUpdateEnabled };
+                var autoUpdateItem = CreateMenuItem(LanguageManager.Current.MenuAutoUpdate ?? "🔄 Auto-Update", FluentGlyphs.UpdateRestore,
+                    isChecked: SettingsService.Instance.AutoUpdateEnabled);
                 autoUpdateItem.Click += async (s, args) =>
                 {
                     bool newState = !SettingsService.Instance.AutoUpdateEnabled;
                     SettingsService.Instance.AutoUpdateEnabled = newState;
                     await SettingsService.SaveAsync();
-                    ((ToolStripMenuItem)s!).Checked = newState;
+                    SetToggleState((ToolStripMenuItem)s!, newState);
                     _shell.ShowBalloonTip(LanguageManager.Current.AppName,
                         newState ? (LanguageManager.Current.MsgAutoUpdateEnabled ?? "Auto-update enabled. App will update automatically.")
                                  : (LanguageManager.Current.MsgAutoUpdateDisabled ?? "Auto-update disabled. You'll be notified about updates."),
@@ -99,73 +142,239 @@ namespace geetRPCS.UI
                 menu.Items.Add(autoUpdateItem);
                 menu.Items.Add(new ToolStripSeparator());
 
-                var manageAppsItem = new ToolStripMenuItem(LanguageManager.Current.MenuManageApps);
-                manageAppsItem.Click += (_, __) => _shell.ToggleManageAppsVisibility();
+                // Checked shows the Manage Apps window is open (it is modal now,
+                // so clicking the item again just activates the open window).
+                ManageAppsMenuItem = CreateMenuItem(LanguageManager.Current.MenuManageApps, FluentGlyphs.Settings,
+                    isChecked: _shell.IsManageAppsOpen);
+                var manageAppsItem = ManageAppsMenuItem;
+                manageAppsItem.Click += (_, __) =>
+                {
+                    // Open the window IMMEDIATELY, before the tray menu finishes
+                    // closing (same as the other modal tray dialogs): the modal
+                    // ShowDialog forces activation, so the menu's close no longer
+                    // steals focus. The old menu.BeginInvoke deferral waited for
+                    // the menu to fully close (~150-250ms), making the click feel
+                    // laggy.
+                    _shell.ToggleManageAppsVisibility();
+                };
                 menu.Items.Add(manageAppsItem);
 
-                var changeIdItem = new ToolStripMenuItem(LanguageManager.Current.MenuChangeAppId);
-                changeIdItem.Click += (_, __) =>
-                {
-                    string currentId = _coordinator.Config.Discord?.ApplicationId ?? "";
-                    string newId = ShowInputDialog(
-                        LanguageManager.Current.DialogChangeAppIdMessage,
-                        LanguageManager.Current.DialogChangeAppIdTitle,
-                        currentId);
-                    if (!string.IsNullOrWhiteSpace(newId) && newId.Trim() != currentId)
+                // Custom Rich Presence: the one-stop GUI for building your own
+                // presence — idle/active texts, timestamps, buttons and (advanced)
+                // your own Discord Application ID — so users never need to
+                // hand-edit JSON or open a text editor. Absorbs the old Change
+                // Application ID dialog. Same immediate-open pattern: the modal
+                // ShowDialog forces activation, so the menu's close no longer
+                // steals focus.
+                var customPresenceItem = CreateMenuItem(LanguageManager.Current.MenuDefaultPresence, FluentGlyphs.Chat,
+                    (_, __) =>
                     {
-                        if (_coordinator.ChangeApplicationId(newId))
+                        var dlg = new CustomRichPresenceWindow(_coordinator.Config);
+                        if (dlg.ShowDialog() == true && dlg.Result != null)
                         {
-                            MessageBox.Show(LanguageManager.Current.MsgAppIdChanged,
-                                LanguageManager.Current.AppName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            if (_coordinator.SaveConfig(dlg.Result))
+                                MessageDialog.ShowInfo(LanguageManager.Current.MsgPresenceSaved ?? "Custom Rich Presence saved.",
+                                    LanguageManager.Current.AppName);
+                            else
+                                MessageDialog.ShowError(LanguageManager.Current.ErrorSaveConfig ?? "Failed to save config.",
+                                    LanguageManager.Current.AppName);
                         }
-                        else
-                        {
-                            MessageBox.Show($"{LanguageManager.Current.ErrorSaveConfig}: invalid ID",
-                                LanguageManager.Current.AppName, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-                };
-                menu.Items.Add(changeIdItem);
+                        System.Threading.Tasks.Task.Run(async () =>
+                        { await System.Threading.Tasks.Task.Delay(500); MemoryHelper.TrimMemory(); });
+                    });
+                menu.Items.Add(customPresenceItem);
                 menu.Items.Add(new ToolStripSeparator());
 
                 AddStatisticsMenu(menu);
 
-                PreviewMenuItem = new ToolStripMenuItem(LanguageManager.Current.MenuPreviewWindow)
-                { Checked = _shell.IsPreviewVisible };
-                PreviewMenuItem.Click += (_, __) => _shell.TogglePreviewVisibility();
+                PreviewMenuItem = CreateMenuItem(LanguageManager.Current.MenuPreviewWindow, FluentGlyphs.View,
+                    isChecked: _shell.IsPreviewVisible);
+                PreviewMenuItem.Click += (_, __) =>
+                {
+                    // Defer until the tray menu has fully closed (same pattern as
+                    // Manage Apps) so the window can take foreground cleanly. A
+                    // theme switch / OS theme flip can Rebuild() (and dispose this
+                    // menu) before the queued delegate runs; nothing below may
+                    // touch the disposed menu.
+                    menu.BeginInvoke(new Action(() =>
+                    {
+                        if (menu.IsDisposed) return;
+                        _shell.TogglePreviewVisibility();
+                    }));
+                };
                 menu.Items.Add(PreviewMenuItem);
                 menu.Items.Add(new ToolStripSeparator());
 
-                var startupItem = new ToolStripMenuItem(LanguageManager.Current.MenuStartup);
-                try { startupItem.Checked = StartupTask.IsEnabled(); } catch { startupItem.Checked = false; }
+                var startupItem = CreateMenuItem(LanguageManager.Current.MenuStartup, FluentGlyphs.Flag,
+                    isChecked: StartupTask.IsEnabled());
                 startupItem.Click += (_, __) =>
                 {
                     try
                     {
-                        StartupTask.Enable(!startupItem.Checked);
-                        startupItem.Checked = !startupItem.Checked;
+                        bool wasOn = StartupTask.IsEnabled();
+                        StartupTask.Enable(!wasOn);
+                        SetToggleState(startupItem, !wasOn);
                     }
                     catch (Exception ex)
                     {
                         LogService.Log($"Startup toggle error: {ex.Message}", "ERROR", "TrayMenu");
-                        MessageBox.Show(LanguageManager.Current.ErrorStartupToggle + ex.Message,
-                            LanguageManager.Current.AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageDialog.ShowError(LanguageManager.Current.ErrorStartupToggle + ex.Message,
+                            LanguageManager.Current.AppName);
                     }
                 };
                 menu.Items.Add(startupItem);
                 AddQuickActionsMenu(menu);
                 menu.Items.Add(new ToolStripSeparator());
                 AddLanguageMenu(menu);
-                menu.Items.Add(LanguageManager.Current.MenuCheckUpdates, null, (_, __) => _shell.CheckForUpdatesFromMenu());
-                menu.Items.Add(LanguageManager.Current.MenuOpenLog, null, (_, __) => _shell.OpenLog());
+                // Help & Guide: built-in readme (how the app works, customization,
+                // troubleshooting) so users never need to open GitHub or the
+                // install folder for the basics.
+                menu.Items.Add(CreateMenuItem(LanguageManager.Current.MenuHelp, FluentGlyphs.Help,
+                    (_, __) =>
+                    {
+                        var guide = new GuideWindow();
+                        guide.ShowDialog();
+                        System.Threading.Tasks.Task.Run(async () =>
+                        { await System.Threading.Tasks.Task.Delay(500); MemoryHelper.TrimMemory(); });
+                    }));
+                menu.Items.Add(CreateMenuItem(LanguageManager.Current.MenuCheckUpdates, FluentGlyphs.Refresh, (_, __) => _shell.CheckForUpdatesFromMenu()));
+                menu.Items.Add(CreateMenuItem(LanguageManager.Current.MenuOpenLog, FluentGlyphs.Document, (_, __) => _shell.OpenLog()));
                 menu.Items.Add(new ToolStripSeparator());
-                menu.Items.Add(LanguageManager.Current.MenuExit, null, (_, __) => _shell.ExitApp());
+                menu.Items.Add(CreateMenuItem(LanguageManager.Current.MenuExit, FluentGlyphs.Power, (_, __) => _shell.ExitApp()));
 
                 _trayIcon.ContextMenuStrip = menu;
+                PinImageMargins(menu);
                 UpdateTrayText();
                 LogService.Log("Tray menu updated", "INFO", "TrayMenu");
             }
             catch (Exception ex) { LogService.Log($"Failed to update tray menu: {ex}", "ERROR", "TrayMenu"); }
+        }
+
+        /// <summary>Applies a theme mode (Dark/Light/System) live, persists it and re-checks the menu items.</summary>
+        private async void SetThemeMode(string mode, ToolStripMenuItem systemItem, ToolStripMenuItem darkItem, ToolStripMenuItem lightItem)
+        {
+            SettingsService.Instance.ThemeMode = mode;
+            WpfHost.ApplyThemeMode(mode);
+            SetSubmenuSelection(systemItem, mode == "System");
+            SetSubmenuSelection(darkItem, mode == "Dark");
+            SetSubmenuSelection(lightItem, mode == "Light");
+            if (ThemeMenuItem != null) ThemeMenuItem.Text = GetThemeMenuText(mode);
+            await SettingsService.SaveAsync();
+            // Rebuild AFTER the theme click unwinds: the menu-item glyph images are
+            // baked bitmaps carrying the previous theme's color, and disposing the
+            // ContextMenuStrip from inside its own click handler would crash. The
+            // deferred rebuild re-renders every icon with the new theme's color.
+            _shell.RebuildTrayMenuDeferred();
+            LogService.Log($"Theme mode set to {mode}", "INFO", "TrayMenu");
+        }
+
+        /// <summary>Menu text for the Theme item including the active mode, e.g. "🌗 Theme: Dark".</summary>
+        internal static string GetThemeMenuText(string mode)
+        {
+            string label = mode == "Dark" ? (LanguageManager.Current.MenuThemeDark ?? "Dark")
+                         : mode == "Light" ? (LanguageManager.Current.MenuThemeLight ?? "Light")
+                         : (LanguageManager.Current.MenuThemeSystem ?? "System");
+            return EscapeMnemonics($"{FluentGlyphs.StripLeadingEmoji(LanguageManager.Current.MenuTheme ?? "🌗 Theme")}: {label}");
+        }
+
+        /// <summary>Compact Fluent menu item padding: 8px vertical total (≈24px tall
+        /// items) and 8px horizontal — keeps the tray menu tight so it doesn't
+        /// stretch too tall.</summary>
+        internal static readonly Padding MenuItemPadding = new Padding(8, 4, 8, 4);
+
+        /// <summary>WinForms menu text treats "&" as the mnemonic prefix — the
+        /// next character becomes an (invisible) access key and the ampersand
+        /// itself is swallowed, which rendered "Help & Guide" as "Help  Guide".
+        /// Doubling the ampersand is the WinForms idiom for a literal "&".</summary>
+        internal static string EscapeMnemonics(string text)
+            => string.IsNullOrEmpty(text) ? text : text.Replace("&", "&&");
+
+        /// <summary>Builds a menu item with the emoji prefix stripped from the
+        /// localized text and replaced by a monochrome Segoe Fluent glyph image.
+        /// WinForms menu items can't mix fonts in one string, and PUA glyphs get
+        /// no GDI font-fallback — so the glyph is drawn into the item's Image.
+        /// Toggle items (isChecked) render the glyph in the theme ACCENT color as
+        /// their ON indicator INSTEAD of the Checked property: .NET 8 WinForms
+        /// renders Checked+Image as a hardcoded OS-accent blue square scaled over
+        /// the icon, which no renderer override can stop (the OnRenderItemCheck
+        /// path isn't even called) and which clashes with the Fluent theme.
+        /// Items WITHOUT an image keep Checked (clean accent checkmark).</summary>
+        private static ToolStripMenuItem CreateMenuItem(string localizedText, string glyph, EventHandler onClick = null, bool isChecked = false)
+        {
+            var item = new ToolStripMenuItem(EscapeMnemonics(FluentGlyphs.StripLeadingEmoji(localizedText)))
+            {
+                // Glyph color follows the active theme (resolved at render time),
+                // not a fixed gray — matches the menu text/background contrast. ON
+                // state uses AccentGlyph (accent contrast-adjusted for the theme bg).
+                Image = FluentGlyphs.CreateMenuGlyph(glyph, isChecked ? ThemePalette.AccentGlyph : ThemePalette.TextSecondary),
+                Padding = MenuItemPadding,
+                Tag = glyph
+            };
+            if (onClick != null) item.Click += onClick;
+            return item;
+        }
+
+        /// <summary>Refreshes an image-based toggle item's ON state: the glyph is
+        /// re-rendered in the contrast-safe accent color when on, secondary gray
+        /// when off. Replaces setting Checked on items that carry an image (see
+        /// CreateMenuItem for why Checked+Image is avoided). The glyph codepoint is
+        /// read from item.Tag (set by CreateMenuItem).</summary>
+        public static void SetToggleState(ToolStripMenuItem item, bool on)
+        {
+            if (item == null) return;
+            string glyph = item.Tag as string;
+            if (string.IsNullOrEmpty(glyph)) return;
+            var old = item.Image;
+            item.Image = FluentGlyphs.CreateMenuGlyph(glyph, on ? ThemePalette.AccentGlyph : ThemePalette.TextSecondary);
+            old?.Dispose();
+        }
+
+        /// <summary>Selection indicator for radio-style submenu items (theme mode,
+        /// language, shortcuts): an accent check glyph when selected, a transparent
+        /// 16px placeholder otherwise. Same 16px accent rendering as the top-level
+        /// toggle glyphs, so the whole menu uses one visual language instead of
+        /// WinForms' internal checkmark (which also renders inconsistently under
+        /// .NET 8). Unselected rows must still carry an Image: WinForms collapses
+        /// the dropdown's image margin to zero width when no visible item has one,
+        /// which shifts the submenu's text column off the main menu's alignment.</summary>
+        internal static void SetSubmenuSelection(ToolStripMenuItem item, bool selected)
+        {
+            if (item == null) return;
+            var old = item.Image;
+            item.Image = selected ? FluentGlyphs.CreateMenuGlyph(FluentGlyphs.CheckMark, ThemePalette.AccentGlyph)
+                                  : new System.Drawing.Bitmap(16, 16);
+            old?.Dispose();
+        }
+
+        /// <summary>WinForms only allocates a dropdown's image margin when at least
+        /// one visible item has an Image (see SetSubmenuSelection's transparent
+        /// placeholder). Pinning ShowImageMargin here additionally keeps the gutter
+        /// alive for submenus whose items never carry images, so every column
+        /// stays flush with the main menu.</summary>
+        private static void PinImageMargins(ToolStrip strip)
+        {
+            foreach (ToolStripItem item in strip.Items)
+            {
+                if (item is ToolStripMenuItem mi && mi.HasDropDownItems)
+                {
+                    if (mi.DropDown is ToolStripDropDownMenu dd) dd.ShowImageMargin = true;
+                    PinImageMargins(mi.DropDown);
+                }
+            }
+        }
+
+        /// <summary>Menu glyphs are rendered bitmaps; the strip's Dispose does not
+        /// release them, so they are disposed explicitly before the strip goes.</summary>
+        private static void DisposeMenuImages(ContextMenuStrip menu)
+        {
+            foreach (ToolStripItem item in menu.Items)
+            {
+                if (item is ToolStripMenuItem mi && mi.Image != null)
+                {
+                    mi.Image.Dispose();
+                    mi.Image = null;
+                }
+            }
         }
 
         /// <summary>Refreshes pause/private check state and the tray tooltip text (no full rebuild).</summary>
@@ -175,12 +384,17 @@ namespace geetRPCS.UI
             {
                 if (PauseItem != null)
                 {
-                    PauseItem.Checked = _coordinator.IsPaused;
-                    PauseItem.Text = _coordinator.IsPaused ? LanguageManager.Current.MenuResume : LanguageManager.Current.MenuPause;
+                    // The pause item swaps its glyph (Play when paused so you can
+                    // resume, Pause otherwise) AND its ON color (accent = paused).
+                    string pauseGlyph = _coordinator.IsPaused ? FluentGlyphs.Play : FluentGlyphs.Pause;
+                    PauseItem.Text = EscapeMnemonics(FluentGlyphs.StripLeadingEmoji(
+                        _coordinator.IsPaused ? LanguageManager.Current.MenuResume : LanguageManager.Current.MenuPause));
+                    PauseItem.Tag = pauseGlyph;
+                    SetToggleState(PauseItem, _coordinator.IsPaused);
                 }
-                if (PrivateModeItem != null) PrivateModeItem.Checked = _coordinator.PrivateMode;
-                if (MouseEnergyItem != null) MouseEnergyItem.Checked = SettingsService.Instance.MouseEnergyEnabled;
-                if (TrayAnimationItem != null) TrayAnimationItem.Checked = SettingsService.Instance.TrayAnimationEnabled;
+                if (PrivateModeItem != null) SetToggleState(PrivateModeItem, _coordinator.PrivateMode);
+                if (MouseEnergyItem != null) SetToggleState(MouseEnergyItem, SettingsService.Instance.MouseEnergyEnabled);
+                if (TrayAnimationItem != null) SetToggleState(TrayAnimationItem, SettingsService.Instance.TrayAnimationEnabled);
                 UpdateTrayText();
             }
             catch (Exception ex) { LogService.Log($"UpdateTrayPresentation error: {ex.Message}", "ERROR", "TrayMenu"); }
@@ -197,54 +411,59 @@ namespace geetRPCS.UI
         #region ----- Sub menus -----
         private void AddStatisticsMenu(ContextMenuStrip menu)
         {
-            var statsMenu = new ToolStripMenuItem(LanguageManager.Current.MenuStatistics);
-            statsMenu.DropDownItems.Add(LanguageManager.Current.MenuToday, null, (_, __) => _coordinator.Stats.ShowToday());
-            statsMenu.DropDownItems.Add(LanguageManager.Current.MenuThisWeek, null, (_, __) => _coordinator.Stats.ShowWeek());
-            statsMenu.DropDownItems.Add(LanguageManager.Current.MenuThisMonth, null, (_, __) => _coordinator.Stats.ShowMonth());
-            statsMenu.DropDownItems.Add(LanguageManager.Current.MenuAllTime, null, (_, __) => _coordinator.Stats.ShowAllTime());
+            // Checked while the shared statistics window is open (live-updated via
+            // Program's StatisticsWindow.IsOpenChanged subscription).
+            var statsMenu = CreateMenuItem(LanguageManager.Current.MenuStatistics, FluentGlyphs.Chart,
+                isChecked: _shell.IsStatsOpen);
+            StatisticsMenuItem = statsMenu;
+            statsMenu.DropDownItems.Add(CreateMenuItem(LanguageManager.Current.MenuToday, FluentGlyphs.Calendar, (_, __) => _coordinator.Stats.ShowToday()));
+            statsMenu.DropDownItems.Add(CreateMenuItem(LanguageManager.Current.MenuThisWeek, FluentGlyphs.CalendarWeek, (_, __) => _coordinator.Stats.ShowWeek()));
+            statsMenu.DropDownItems.Add(CreateMenuItem(LanguageManager.Current.MenuThisMonth, FluentGlyphs.Chart, (_, __) => _coordinator.Stats.ShowMonth()));
+            statsMenu.DropDownItems.Add(CreateMenuItem(LanguageManager.Current.MenuAllTime, FluentGlyphs.Stopwatch, (_, __) => _coordinator.Stats.ShowAllTime()));
             statsMenu.DropDownItems.Add(new ToolStripSeparator());
-            statsMenu.DropDownItems.Add(LanguageManager.Current.MenuExportCSV, null, (_, __) => _coordinator.Stats.ExportAsync("csv"));
-            statsMenu.DropDownItems.Add(LanguageManager.Current.MenuExportJSON, null, (_, __) => _coordinator.Stats.ExportAsync("json"));
+            statsMenu.DropDownItems.Add(CreateMenuItem(LanguageManager.Current.MenuExportCSV, FluentGlyphs.Save, (_, __) => _coordinator.Stats.ExportAsync("csv")));
+            statsMenu.DropDownItems.Add(CreateMenuItem(LanguageManager.Current.MenuExportJSON, FluentGlyphs.Document, (_, __) => _coordinator.Stats.ExportAsync("json")));
             statsMenu.DropDownItems.Add(new ToolStripSeparator());
-            statsMenu.DropDownItems.Add(LanguageManager.Current.MenuResetStats, null, async (_, __) =>
+            statsMenu.DropDownItems.Add(CreateMenuItem(LanguageManager.Current.MenuResetStats, FluentGlyphs.Delete, async (_, __) =>
             {
-                if (ConfirmDialog.Show(LanguageManager.Current.DialogResetStatsMessage, LanguageManager.Current.DialogResetStatsTitle))
+                if (MessageDialog.Confirm(LanguageManager.Current.DialogResetStatsMessage, LanguageManager.Current.DialogResetStatsTitle))
                 {
                     await _coordinator.Stats.ResetAsync();
                     _shell.ShowBalloonTip(LanguageManager.Current.AppName, LanguageManager.Current.MsgStatsReset, ToolTipIcon.Info);
                 }
-            });
+            }));
             menu.Items.Add(statsMenu);
         }
 
         private void AddQuickActionsMenu(ContextMenuStrip menu)
         {
-            var quickActionsMenu = new ToolStripMenuItem(LanguageManager.Current.MenuQuickActions);
-            quickActionsMenu.DropDownItems.Add(LanguageManager.Current.MenuOpenFolder, null,
-                (_, __) => { try { System.Diagnostics.Process.Start("explorer.exe", AppPaths.InstallDir); } catch (Exception ex) { LogService.Log($"Failed to open folder: {ex.Message}", "ERROR", "TrayMenu"); } });
-            quickActionsMenu.DropDownItems.Add(LanguageManager.Current.MenuEditConfig, null,
-                (_, __) => OpenOrCreateConfig());
-            quickActionsMenu.DropDownItems.Add(LanguageManager.Current.MenuEditApps, null,
-                (_, __) => OpenFileWithEditor(AppPaths.AppsPath, "apps.json"));
+            var quickActionsMenu = CreateMenuItem(LanguageManager.Current.MenuQuickActions, FluentGlyphs.Bolt);
+            quickActionsMenu.DropDownItems.Add(CreateMenuItem(LanguageManager.Current.MenuOpenFolder, FluentGlyphs.FolderOpen,
+                (_, __) => { try { System.Diagnostics.Process.Start("explorer.exe", AppPaths.InstallDir); } catch (Exception ex) { LogService.Log($"Failed to open folder: {ex.Message}", "ERROR", "TrayMenu"); } }));
+            quickActionsMenu.DropDownItems.Add(CreateMenuItem(LanguageManager.Current.MenuEditConfig, FluentGlyphs.Settings,
+                (_, __) => OpenOrCreateConfig()));
+            quickActionsMenu.DropDownItems.Add(CreateMenuItem(LanguageManager.Current.MenuEditApps, FluentGlyphs.Edit,
+                (_, __) => OpenFileWithEditor(AppPaths.AppsPath, "apps.json")));
             quickActionsMenu.DropDownItems.Add(new ToolStripSeparator());
-            quickActionsMenu.DropDownItems.Add(LanguageManager.Current.MenuReloadAll, null, (_, __) =>
+            quickActionsMenu.DropDownItems.Add(CreateMenuItem(LanguageManager.Current.MenuReloadAll, FluentGlyphs.Refresh, (_, __) =>
             {
-                if (ConfirmDialog.Show(LanguageManager.Current.DialogReloadMessage, LanguageManager.Current.DialogReloadTitle))
+                if (MessageDialog.Confirm(LanguageManager.Current.DialogReloadMessage, LanguageManager.Current.DialogReloadTitle))
                     _coordinator.ReloadConfig();
-            });
+            }));
 
             quickActionsMenu.DropDownItems.Add(new ToolStripSeparator());
-            var shortcutMenu = new ToolStripMenuItem(LanguageManager.Current.MenuManageShortcuts ?? "➕ Manage Shortcuts");
+            var shortcutMenu = CreateMenuItem(LanguageManager.Current.MenuManageShortcuts ?? "➕ Manage Shortcuts", FluentGlyphs.Add);
 
-            var desktopShortcutItem = new ToolStripMenuItem(LanguageManager.Current.MenuShortcutDesktop ?? "Desktop Shortcut")
-            { Checked = ShortcutManager.IsDesktopShortcutExists() };
+            var desktopShortcutItem = new ToolStripMenuItem(EscapeMnemonics(LanguageManager.Current.MenuShortcutDesktop ?? "Desktop Shortcut"))
+            { Padding = MenuItemPadding };
+            SetSubmenuSelection(desktopShortcutItem, ShortcutManager.IsDesktopShortcutExists());
             desktopShortcutItem.Click += async (_, __) =>
             {
                 try
                 {
                     if (ShortcutManager.IsDesktopShortcutExists())
                     {
-                        if (ConfirmDialog.Show(LanguageManager.Current.DialogRemoveDesktopShortcut ?? "Remove desktop shortcut?", LanguageManager.Current.AppName))
+                        if (MessageDialog.Confirm(LanguageManager.Current.DialogRemoveDesktopShortcut ?? "Remove desktop shortcut?", LanguageManager.Current.AppName))
                         {
                             ShortcutManager.RemoveDesktopShortcut();
                             _shell.ShowBalloonTip(LanguageManager.Current.AppName, LanguageManager.Current.MsgShortcutDesktopRemoved ?? "Desktop shortcut removed", ToolTipIcon.Info);
@@ -266,21 +485,22 @@ namespace geetRPCS.UI
                 catch (Exception ex)
                 {
                     LogService.Log($"Desktop shortcut error: {ex.Message}", "ERROR", "TrayMenu");
-                    MessageBox.Show(LanguageManager.Current.ErrorManageDesktopShortcut + ex.Message,
-                        LanguageManager.Current.AppName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageDialog.ShowError(LanguageManager.Current.ErrorManageDesktopShortcut + ex.Message,
+                        LanguageManager.Current.AppName);
                 }
             };
             shortcutMenu.DropDownItems.Add(desktopShortcutItem);
 
-            var startMenuShortcutItem = new ToolStripMenuItem(LanguageManager.Current.MenuShortcutStartMenu ?? "Start Menu Shortcut")
-            { Checked = ShortcutManager.IsStartMenuShortcutExists() };
+            var startMenuShortcutItem = new ToolStripMenuItem(EscapeMnemonics(LanguageManager.Current.MenuShortcutStartMenu ?? "Start Menu Shortcut"))
+            { Padding = MenuItemPadding };
+            SetSubmenuSelection(startMenuShortcutItem, ShortcutManager.IsStartMenuShortcutExists());
             startMenuShortcutItem.Click += async (_, __) =>
             {
                 try
                 {
                     if (ShortcutManager.IsStartMenuShortcutExists())
                     {
-                        if (ConfirmDialog.Show(LanguageManager.Current.DialogRemoveStartMenuShortcut ?? "Remove Start Menu shortcut?", LanguageManager.Current.AppName))
+                        if (MessageDialog.Confirm(LanguageManager.Current.DialogRemoveStartMenuShortcut ?? "Remove Start Menu shortcut?", LanguageManager.Current.AppName))
                         {
                             ShortcutManager.RemoveStartMenuShortcut();
                             _shell.ShowBalloonTip(LanguageManager.Current.AppName, LanguageManager.Current.MsgShortcutStartMenuRemoved ?? "Start Menu shortcut removed", ToolTipIcon.Info);
@@ -302,8 +522,8 @@ namespace geetRPCS.UI
                 catch (Exception ex)
                 {
                     LogService.Log($"Start Menu shortcut error: {ex.Message}", "ERROR", "TrayMenu");
-                    MessageBox.Show(LanguageManager.Current.ErrorManageStartMenuShortcut + ex.Message,
-                        LanguageManager.Current.AppName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageDialog.ShowError(LanguageManager.Current.ErrorManageStartMenuShortcut + ex.Message,
+                        LanguageManager.Current.AppName);
                 }
             };
             shortcutMenu.DropDownItems.Add(startMenuShortcutItem);
@@ -314,12 +534,13 @@ namespace geetRPCS.UI
 
         private void AddLanguageMenu(ContextMenuStrip menu)
         {
-            var languageMenu = new ToolStripMenuItem(LanguageManager.Current.MenuLanguage);
+            var languageMenu = CreateMenuItem(LanguageManager.Current.MenuLanguage, FluentGlyphs.Globe);
             var availableLanguages = LanguageManager.GetAvailableLanguages();
             string currentLang = LanguageManager.GetCurrentLanguageCode();
             foreach (var lang in availableLanguages)
             {
-                var langItem = new ToolStripMenuItem(lang.Name) { Checked = (lang.Code == currentLang) };
+                var langItem = new ToolStripMenuItem(EscapeMnemonics(lang.Name)) { Padding = MenuItemPadding };
+                SetSubmenuSelection(langItem, lang.Code == currentLang);
                 langItem.Click += async (_, __) =>
                 {
                     await LanguageManager.SetLanguageAsync(lang.Code);
@@ -339,7 +560,7 @@ namespace geetRPCS.UI
             {
                 if (!File.Exists(AppPaths.ConfigPath))
                 {
-                    if (ConfirmDialog.Show(LanguageManager.Current.DialogConfigNotFound, LanguageManager.Current.AppName))
+                    if (MessageDialog.Confirm(LanguageManager.Current.DialogConfigNotFound, LanguageManager.Current.AppName))
                         CreateDefaultConfigFile();
                     else return;
                 }
@@ -348,8 +569,7 @@ namespace geetRPCS.UI
             catch (Exception ex)
             {
                 LogService.Log($"Error opening config: {ex.Message}", "ERROR", "TrayMenu");
-                MessageBox.Show($"{LanguageManager.Current.ErrorPrefix}{ex.Message}", LanguageManager.Current.AppName,
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageDialog.ShowError($"{LanguageManager.Current.ErrorPrefix}{ex.Message}", LanguageManager.Current.AppName);
             }
         }
 
@@ -371,8 +591,8 @@ namespace geetRPCS.UI
             catch (Exception ex)
             {
                 LogService.Log($"Failed to create config.json: {ex.Message}", "ERROR", "TrayMenu");
-                MessageBox.Show($"{LanguageManager.Current.ErrorCreateConfig}\n{ex.Message}",
-                    LanguageManager.Current.AppName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageDialog.ShowError($"{LanguageManager.Current.ErrorCreateConfig}\n{ex.Message}",
+                    LanguageManager.Current.AppName);
             }
         }
 
@@ -382,8 +602,7 @@ namespace geetRPCS.UI
             {
                 if (!File.Exists(filePath))
                 {
-                    MessageBox.Show(LanguageManager.Current.DialogFileNotFound, LanguageManager.Current.AppName,
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageDialog.ShowError(LanguageManager.Current.DialogFileNotFound, LanguageManager.Current.AppName);
                     return;
                 }
                 var psi = new System.Diagnostics.ProcessStartInfo { FileName = filePath, UseShellExecute = true };
@@ -394,256 +613,11 @@ namespace geetRPCS.UI
             catch (Exception ex)
             {
                 LogService.Log($"Failed to open {fileName}: {ex.Message}", "ERROR", "TrayMenu");
-                if (ConfirmDialog.Show(LanguageManager.Current.DialogOpenWithNotepad, LanguageManager.Current.AppName))
+                if (MessageDialog.Confirm(LanguageManager.Current.DialogOpenWithNotepad, LanguageManager.Current.AppName))
                     System.Diagnostics.Process.Start("notepad.exe", filePath);
             }
         }
 
-        private string ShowInputDialog(string text, string caption, string defaultValue = "")
-        {
-            string tutorialUrl = LanguageManager.Current.UrlTutorial;
-            string assetsUrl = "https://github.com/geetcr4ck/geetRPCS/raw/main/AssetPack.zip";
-            string defaultAppId = "1433700335863726183";
-
-            // Discord-style dark palette (matches ManageAppsForm).
-            Color bg = Color.FromArgb(47, 49, 54);
-            Color inputBg = Color.FromArgb(30, 31, 34);
-            Color textColor = Color.FromArgb(255, 255, 255);
-            Color blurple = Color.FromArgb(88, 101, 242);
-            Color blurpleHover = Color.FromArgb(71, 82, 196);
-            Color blurpleDown = Color.FromArgb(60, 69, 165);
-            Color btnBg = Color.FromArgb(78, 80, 88);
-            Color btnHover = Color.FromArgb(109, 111, 120);
-            Color btnDown = Color.FromArgb(92, 94, 102);
-            Color warnBg = Color.FromArgb(44, 41, 33);
-            Color warnText = Color.FromArgb(240, 178, 50);
-            Color warnAccent = Color.FromArgb(250, 166, 26);
-            Color errorText = Color.FromArgb(240, 71, 71); // Discord red #F04747
-
-            // The localized message is "instruction\n\nWARNING: ...". Split it so the
-            // warning renders as its own callout instead of a wall of text.
-            string description = text, warning = null;
-            int split = text.IndexOf("\n\n", StringComparison.Ordinal);
-            if (split >= 0)
-            {
-                description = text.Substring(0, split).Trim();
-                warning = text.Substring(split + 2).Trim();
-            }
-
-            const int PAD = 24;
-            const int CLIENT_W = 480;
-            Font font = new Font("Segoe UI", 9);
-            Font inputFont = new Font("Segoe UI", 10);
-
-            using Form prompt = new Form()
-            {
-                FormBorderStyle = FormBorderStyle.FixedDialog,
-                Text = caption,
-                StartPosition = FormStartPosition.CenterScreen,
-                MaximizeBox = false,
-                MinimizeBox = false,
-                ShowInTaskbar = false,
-                BackColor = bg,
-                ForeColor = textColor
-            };
-            try
-            {
-                string iconPath = Utils.AppPaths.IconPath;
-                if (File.Exists(iconPath)) prompt.Icon = new Icon(iconPath);
-            }
-            catch { }
-
-            int contentW = CLIENT_W - 2 * PAD;
-            int y = PAD;
-
-            // 1. Description
-            var textLabel = new Label()
-            {
-                Left = PAD,
-                Top = y,
-                Width = contentW,
-                Text = description,
-                AutoSize = false,
-                Font = font,
-                ForeColor = textColor
-            };
-            textLabel.Height = TextRenderer.MeasureText(description, font, new Size(contentW, 0), TextFormatFlags.WordBreak).Height + 2;
-            prompt.Controls.Add(textLabel);
-            y += textLabel.Height + 14;
-
-            // 2. Warning callout (amber accent bar + tinted panel)
-            if (!string.IsNullOrEmpty(warning))
-            {
-                int warnTextW = contentW - 4 - 24; // minus accent bar and label padding
-                int warnH = TextRenderer.MeasureText(warning, font, new Size(warnTextW, 0), TextFormatFlags.WordBreak).Height + 18;
-                var warnPanel = new Panel
-                {
-                    Left = PAD,
-                    Top = y,
-                    Width = contentW,
-                    Height = warnH,
-                    BackColor = warnBg
-                };
-                var warnAccentBar = new Panel { Dock = DockStyle.Left, Width = 4, BackColor = warnAccent };
-                var warnLabel = new Label
-                {
-                    Dock = DockStyle.Fill,
-                    Text = warning,
-                    Font = font,
-                    ForeColor = warnText,
-                    AutoSize = false,
-                    Padding = new Padding(12, 9, 12, 9)
-                };
-                warnPanel.Controls.Add(warnAccentBar);
-                warnPanel.Controls.Add(warnLabel);
-                prompt.Controls.Add(warnPanel);
-                y += warnH + 14;
-            }
-
-            // 3. Input (pre-filled with the current ID)
-            var textBox = new TextBox()
-            {
-                Left = PAD,
-                Top = y,
-                Width = contentW,
-                Text = defaultValue,
-                Font = inputFont,
-                BackColor = inputBg,
-                ForeColor = textColor,
-                BorderStyle = BorderStyle.FixedSingle,
-                TabIndex = 0
-            };
-            prompt.Controls.Add(textBox);
-            y += textBox.Height + 4;
-
-            // Inline validation error (shown only while the input is invalid)
-            var lblError = new Label()
-            {
-                Left = PAD,
-                Top = y,
-                Width = contentW,
-                Height = 15,
-                Text = LanguageManager.Current.ErrorInvalidAppId ?? "Application ID must be 17-20 digits (numbers only).",
-                Font = new Font("Segoe UI", 8),
-                ForeColor = errorText,
-                Visible = false
-            };
-            prompt.Controls.Add(lblError);
-            y += 15 + 5;
-
-            // 4. Helper links (tutorial + asset pack)
-            var links = new FlowLayoutPanel
-            {
-                Left = PAD,
-                Top = y,
-                Width = contentW,
-                Height = 22,
-                FlowDirection = FlowDirection.LeftToRight,
-                WrapContents = false,
-                BackColor = Color.Transparent
-            };
-            var lnkTut = new LinkLabel()
-            {
-                Text = LanguageManager.Current.LinkTutorial,
-                AutoSize = true,
-                LinkColor = blurple,
-                ActiveLinkColor = Color.FromArgb(115, 125, 255),
-                Font = font
-            };
-            lnkTut.LinkClicked += (s, e) => OpenUrl(tutorialUrl);
-            var lnkAssets = new LinkLabel()
-            {
-                Text = LanguageManager.Current.LinkDownloadAssets,
-                AutoSize = true,
-                LinkColor = blurple,
-                ActiveLinkColor = Color.FromArgb(115, 125, 255),
-                Font = font,
-                Margin = new Padding(16, 0, 0, 0)
-            };
-            lnkAssets.LinkClicked += (s, e) => OpenUrl(assetsUrl);
-            links.Controls.Add(lnkTut);
-            links.Controls.Add(lnkAssets);
-            prompt.Controls.Add(links);
-            y += links.Height + 18;
-
-            // 5. Action row (right-aligned): Cancel | Reset Default | Save
-            int btnW = 104, btnH = 32, gap = 8;
-            var btnCancel = MakeDialogButton(LanguageManager.Current.BtnCancel ?? "Cancel", btnBg, btnHover, btnDown, font);
-            btnCancel.Bounds = new Rectangle(CLIENT_W - PAD - 3 * btnW - 2 * gap, y, btnW, btnH);
-            btnCancel.DialogResult = DialogResult.Cancel;
-            btnCancel.TabIndex = 1;
-            var btnReset = MakeDialogButton(LanguageManager.Current.BtnResetDefault ?? "Reset Default", btnBg, btnHover, btnDown, font);
-            btnReset.Bounds = new Rectangle(CLIENT_W - PAD - 2 * btnW - gap, y, btnW, btnH);
-            btnReset.TabIndex = 2;
-            btnReset.Click += (s, e) =>
-            {
-                textBox.Text = defaultAppId;
-                textBox.Focus();
-                textBox.SelectAll();
-            };
-            var btnSave = MakeDialogButton(LanguageManager.Current.BtnSave ?? "Save", blurple, blurpleHover, blurpleDown, font);
-            btnSave.Bounds = new Rectangle(CLIENT_W - PAD - btnW, y, btnW, btnH);
-            btnSave.DialogResult = DialogResult.OK;
-            btnSave.TabIndex = 3;
-            prompt.Controls.Add(btnCancel);
-            prompt.Controls.Add(btnReset);
-            prompt.Controls.Add(btnSave);
-
-            // Save is enabled only for a valid, changed ID; otherwise show an inline error.
-            Action refreshSave = () =>
-            {
-                string val = textBox.Text?.Trim() ?? "";
-                bool valid = AppCoordinator.IsValidApplicationId(val);
-                bool changed = val.Length > 0 && val != (defaultValue ?? "").Trim();
-                btnSave.Enabled = valid && changed;
-                lblError.Visible = val.Length > 0 && !valid;
-            };
-            textBox.TextChanged += (s, e) => refreshSave();
-            refreshSave();
-
-            prompt.AcceptButton = btnSave;
-            prompt.CancelButton = btnCancel;
-            prompt.Shown += (s, e) =>
-            {
-                textBox.Focus();
-                textBox.SelectAll();
-            };
-
-            prompt.ClientSize = new Size(CLIENT_W, y + btnH + PAD);
-            return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "";
-        }
-
-        /// <summary>Flat dark-theme button with hover/pressed states (Discord style).</summary>
-        private static Button MakeDialogButton(string text, Color bg, Color hover, Color down, Font font)
-        {
-            return new Button
-            {
-                Text = text,
-                Font = font,
-                ForeColor = Color.White,
-                BackColor = bg,
-                FlatStyle = FlatStyle.Flat,
-                FlatAppearance = { BorderSize = 0, MouseOverBackColor = hover, MouseDownBackColor = down },
-                Cursor = Cursors.Hand,
-                UseVisualStyleBackColor = false
-            };
-        }
-
-        private void OpenUrl(string url)
-        {
-            try
-            {
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = url,
-                    UseShellExecute = true
-                });
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(LanguageManager.Current.ErrorOpenLink + " " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
         #endregion
     }
 }

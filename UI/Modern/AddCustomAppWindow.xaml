@@ -1,0 +1,177 @@
+<!--
+    geetRPCS - Add Custom App dialog (ModernWpf / Fluent).
+    GUI replacement for hand-editing apps.json to add an app: process name +
+    match modes, optional window-title match, details template with
+    click-to-insert placeholders, large image, elapsed-time override,
+    buttons and an optional per-app Application ID. Result is a full AppConfig
+    stored in settings.json (customApps), never in apps.json.
+-->
+<Window x:Class="geetRPCS.UI.Modern.AddCustomAppWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        Title="Add Custom App"
+        Width="560"
+        MaxHeight="760"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        ui:ThemeManager.IsThemeAware="True"
+        UseLayoutRounding="True"
+        Background="{DynamicResource ApplicationPageBackgroundThemeBrush}"
+        Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="24,20,24,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Identification + matching -->
+            <StackPanel Grid.Row="0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock x:Name="ProcessLabel" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBox x:Name="ProcessBox" Margin="0,4,0,0" Height="30" VerticalContentAlignment="Center"
+                                 TextChanged="OnFieldChanged" />
+                        <TextBlock x:Name="ProcessHint" FontSize="11" Margin="0,2,0,0" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock x:Name="NameLabel" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBox x:Name="NameBox" Margin="0,4,0,0" Height="30" VerticalContentAlignment="Center"
+                                 TextChanged="OnFieldChanged" />
+                    </StackPanel>
+                </Grid>
+                <Grid Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock x:Name="MatchModeLabel" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <ComboBox x:Name="ProcessMatchBox" Margin="0,4,0,0" Height="32"
+                                  SelectionChanged="OnFieldChanged" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock x:Name="ClientIdLabel" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBox x:Name="ClientIdBox" Margin="0,4,0,0" Height="30" VerticalContentAlignment="Center"
+                                 TextChanged="OnFieldChanged" />
+                    </StackPanel>
+                </Grid>
+                <TextBlock x:Name="ProcessErrorText" Margin="0,6,0,0" FontSize="12" TextWrapping="Wrap"
+                           Foreground="{DynamicResource SystemFillColorCriticalBrush}" Visibility="Collapsed" />
+            </StackPanel>
+
+            <!-- Optional window-title match -->
+            <Expander x:Name="TitleMatchExpander" Grid.Row="1" Margin="0,12,0,0">
+                <Expander.Header>
+                    <TextBlock x:Name="WindowTitleSection" FontSize="12" />
+                </Expander.Header>
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock x:Name="WindowTitleLabel" FontSize="12"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBox x:Name="WindowTitleBox" Margin="0,4,0,0" Height="30" VerticalContentAlignment="Center" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock x:Name="TitleMatchLabel" FontSize="12"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <ComboBox x:Name="TitleMatchBox" Margin="0,4,0,0" Height="32" />
+                    </StackPanel>
+                </Grid>
+            </Expander>
+
+            <!-- Presence text + assets -->
+            <StackPanel Grid.Row="2" Margin="0,12,0,0">
+                <TextBlock x:Name="DetailsLabel" FontSize="12" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                <TextBox x:Name="DetailsBox" Margin="0,4,0,0" Height="30" VerticalContentAlignment="Center" />
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <TextBlock x:Name="PlaceholdersHint" VerticalAlignment="Center" FontSize="12"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                    <Button Content="{}{app_name}" Margin="8,0,0,0" Padding="8,2" FontSize="12" Click="OnPlaceholderClick" />
+                    <Button Content="{}{process_name}" Margin="4,0,0,0" Padding="8,2" FontSize="12" Click="OnPlaceholderClick" />
+                    <Button Content="{}{window_title}" Margin="4,0,0,0" Padding="8,2" FontSize="12" Click="OnPlaceholderClick" />
+                    <Button Content="{}{witty_text}" Margin="4,0,0,0" Padding="8,2" FontSize="12" Click="OnPlaceholderClick" />
+                </StackPanel>
+                <Grid Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock x:Name="LargeKeyLabel" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBox x:Name="LargeKeyBox" Margin="0,4,0,0" Height="30" VerticalContentAlignment="Center"
+                                 TextChanged="OnFieldChanged" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock x:Name="LargeTextLabel" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBox x:Name="LargeTextBox" Margin="0,4,0,0" Height="30" VerticalContentAlignment="Center"
+                                 TextChanged="OnFieldChanged" />
+                    </StackPanel>
+                </Grid>
+                <CheckBox x:Name="TimestampsCheck" Margin="0,10,0,0" IsThreeState="True" />
+            </StackPanel>
+
+            <!-- Buttons -->
+            <StackPanel Grid.Row="3" Margin="0,12,0,0">
+                <TextBlock x:Name="ButtonsSectionText" FontSize="12" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="1.6*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="Button1LabelBox" Height="30" MaxLength="32" VerticalContentAlignment="Center" />
+                    <TextBox x:Name="Button1UrlBox" Grid.Column="2" Height="30" VerticalContentAlignment="Center" />
+                </Grid>
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="1.6*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="Button2LabelBox" Height="30" MaxLength="32" VerticalContentAlignment="Center" />
+                    <TextBox x:Name="Button2UrlBox" Grid.Column="2" Height="30" VerticalContentAlignment="Center" />
+                </Grid>
+                <TextBlock x:Name="InvalidButtonsText" Margin="0,6,0,0" FontSize="12" TextWrapping="Wrap"
+                           Foreground="{DynamicResource SystemFillColorCriticalBrush}" Visibility="Collapsed" />
+            </StackPanel>
+
+            <TextBlock x:Name="ClientIdErrorText" Grid.Row="4" Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap"
+                       Foreground="{DynamicResource SystemFillColorCriticalBrush}" Visibility="Collapsed" />
+
+            <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+                <Button x:Name="CancelButton" Width="96" Height="32" Margin="0,0,8,0" IsCancel="True" />
+                <Button x:Name="AddButton" Width="128" Height="32"
+                        Style="{StaticResource AccentButtonStyle}"
+                        IsDefault="True" Click="OnAddClick" />
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Window>

@@ -1,0 +1,167 @@
+<!--
+    geetRPCS - Discord Presence Preview window (ModernWpf / Fluent).
+    ModernWpf-styled card: rounded large image + small status badge,
+    app name / details / state / elapsed, up to two action buttons,
+    asset info with CDN status, and footer actions (refresh / clear
+    cache / always-on-top). Double-click anywhere hides the window.
+-->
+<Window x:Class="geetRPCS.UI.Modern.PresencePreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        xmlns:local="clr-namespace:geetRPCS.UI.Modern"
+        Title="Discord Presence Preview"
+        Width="360"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="False"
+        WindowStartupLocation="Manual"
+        ui:ThemeManager.IsThemeAware="True"
+        UseLayoutRounding="True"
+        Background="{DynamicResource ApplicationPageBackgroundThemeBrush}"
+        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+        MouseDoubleClick="OnWindowDoubleClick">
+    <Grid Margin="16,14,16,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header: window title + live status -->
+        <Grid Grid.Row="0" Margin="2,0,2,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="HeaderLabel" FontSize="12" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+            <TextBlock x:Name="StatusText" Grid.Column="1" FontSize="12" FontWeight="SemiBold" />
+        </Grid>
+
+        <!-- Presence card -->
+        <Border Grid.Row="1" Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                CornerRadius="8" Padding="14">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Presence row: images + text -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="64" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0" Width="64" Height="64" VerticalAlignment="Top">
+                        <Border CornerRadius="8">
+                            <Border.Background>
+                                <ImageBrush x:Name="LargeImageBrush" Stretch="UniformToFill" />
+                            </Border.Background>
+                        </Border>
+                        <TextBlock x:Name="LargePlaceholder" FontSize="26"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBlock x:Name="LargeLoading" Text="⏳" FontSize="20"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Visibility="Collapsed" />
+                        <Border x:Name="SmallRing" Width="26" Height="26" CornerRadius="13"
+                                Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                Margin="41,41,0,0">
+                            <Border CornerRadius="11"
+                                    Background="{DynamicResource AccentFillColorDefaultBrush}">
+                                <Grid>
+                                    <TextBlock x:Name="SmallCheck" Text="✓" FontWeight="Bold" FontSize="11"
+                                               Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                    <Border>
+                                        <Border.Background>
+                                            <ImageBrush x:Name="SmallImageBrush" Stretch="UniformToFill" />
+                                        </Border.Background>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </Border>
+                    </Grid>
+
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                        <TextBlock x:Name="AppNameText" FontSize="15" FontWeight="SemiBold"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="DetailsText" FontSize="13"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
+                        <TextBlock x:Name="StateText" FontSize="13"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                        <TextBlock x:Name="ElapsedText" FontSize="12"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                   Margin="0,4,0,0" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Action buttons -->
+                <StackPanel Grid.Row="1" Margin="0,12,0,0">
+                    <Button x:Name="Button1" Height="34" Click="OnButtonClick" Visibility="Collapsed" />
+                    <Button x:Name="Button2" Height="34" Margin="0,8,0,0"
+                            Click="OnButtonClick" Visibility="Collapsed" />
+                </StackPanel>
+
+                <!-- Asset info -->
+                <Border Grid.Row="2" Margin="0,12,0,0" CornerRadius="6" Padding="10"
+                        BorderBrush="{DynamicResource TextFillColorTertiaryBrush}"
+                        BorderThickness="0,1,0,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                            <TextBlock Text="{x:Static local:FluentGlyphs.Info}" FontSize="12"
+                                       VerticalAlignment="Center"
+                                       FontFamily="{x:Static local:FluentGlyphs.FontFamily}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                            <TextBlock x:Name="AssetInfoHeader" Margin="6,0,0,0" FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                        <TextBlock x:Name="LargeImageInfo" Grid.Row="1" FontSize="12"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="SmallImageInfo" Grid.Row="2" FontSize="12"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                        <TextBlock x:Name="CdnStatus" Grid.Row="3" FontSize="12"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                   TextWrapping="Wrap" Margin="0,6,0,0" />
+                    </Grid>
+                </Border>
+
+                <!-- Footer actions -->
+                <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right"
+                            Margin="0,12,0,0">
+                    <!-- Icon-only buttons: Padding=0 gives the glyph the full
+                         34x34 cell (the default ModernWpf button padding
+                         shrinks it to ~18px and clips the icon ink). -->
+                    <Button x:Name="RefreshButton" Width="34" Height="34" Padding="0"
+                            FontSize="16" FontFamily="{x:Static local:FluentGlyphs.FontFamily}"
+                            Click="OnRefreshClick" />
+                    <Button x:Name="ClearCacheButton" Width="34" Height="34" Padding="0"
+                            FontSize="16" FontFamily="{x:Static local:FluentGlyphs.FontFamily}"
+                            Margin="8,0,0,0" Click="OnClearCacheClick" />
+                    <Button x:Name="PinButton" Width="34" Height="34" Padding="0"
+                            FontSize="16" FontFamily="{x:Static local:FluentGlyphs.FontFamily}"
+                            Margin="8,0,0,0" Click="OnPinClick" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

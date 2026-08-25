@@ -17,13 +17,12 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using geetRPCS.Utils;
 
 namespace geetRPCS.Services
 {
     /// <summary>
-    /// Centralizes the delayed startup update check, the periodic apps/witty
-    /// database refresh and the memory-trim loop.
+    /// Centralizes the delayed startup update check and the periodic
+    /// apps/witty database refresh.
     /// </summary>
     internal sealed class UpdateOrchestrator : IDisposable
     {
@@ -45,7 +44,6 @@ namespace geetRPCS.Services
         {
             _ = StartupCheckAsync(_cts.Token);
             _ = PeriodicUpdateLoopAsync(_cts.Token);
-            _ = MemoryTrimLoopAsync(_cts.Token);
         }
 
         private async Task StartupCheckAsync(CancellationToken ct)
@@ -104,17 +102,6 @@ namespace geetRPCS.Services
                 {
                     LogService.Log($"Periodic update check failed: {ex.Message}", "ERROR", "UpdateOrchestrator");
                 }
-            }
-        }
-
-        private async Task MemoryTrimLoopAsync(CancellationToken ct)
-        {
-            while (!ct.IsCancellationRequested)
-            {
-                try { await Task.Delay(TimeSpan.FromMinutes(30), ct); }
-                catch (OperationCanceledException) { break; }
-                try { MemoryHelper.TrimMemory(); }
-                catch (Exception ex) { LogService.Log($"Memory trim error: {ex.Message}", "ERROR", "MemoryTrimLoop"); }
             }
         }
 

@@ -24,7 +24,9 @@ namespace geetRPCS.Utils
         public static void Reload() => AppConfigManager.Reload();
         public static Assets ForApp(string processName, Assets fallback)
         {
-            var app = AppConfigManager.Apps.FirstOrDefault(a => a.Process.Equals(processName, StringComparison.OrdinalIgnoreCase));
+            // Effective entry so the user's largeKey/largeText override wins
+            // over the apps.json value.
+            var app = AppConfigManager.GetEffectiveApp(processName);
             var assets = new Assets
             {
                 LargeImageKey = app?.LargeKey ?? fallback.LargeImageKey,

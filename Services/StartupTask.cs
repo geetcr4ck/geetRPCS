@@ -68,8 +68,8 @@ namespace geetRPCS.Services
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"{LanguageManager.Current.ErrorStartupFailed}\n{ex.Message}", LanguageManager.Current.AppName,
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                UI.Modern.MessageDialog.ShowError($"{LanguageManager.Current.ErrorStartupFailed}\n{ex.Message}",
+                    LanguageManager.Current.AppName);
                 throw; // Re-throw to let caller handle if needed
             }
         }

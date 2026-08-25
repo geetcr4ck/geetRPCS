@@ -239,7 +239,13 @@ namespace geetRPCS.Services
                 if (IsNewerVersion(remoteVersion, localVersion))
                 {
                     Log($"New apps.json version available: {remoteVersion}", "INFO");
-                    if (UI.UpdateDialogs.ShowAppsUpdateDialog(remoteVersion))
+                    // silent (the startup/periodic background checks in
+                    // UpdateOrchestrator) applies the update without prompting:
+                    // those run on threadpool threads, and popping a modal WPF
+                    // dialog from a background thread was both unrequested and
+                    // blocked the check loop until it was dismissed. Only
+                    // interactive callers (silent=false) show the dialog.
+                    if (silent || UI.UpdateDialogs.ShowAppsUpdateDialog(remoteVersion))
                     {
                         File.WriteAllText(AppsPath, remoteJson);
                         Log("apps.json updated successfully", "INFO");
@@ -291,7 +297,9 @@ namespace geetRPCS.Services
                 if (IsNewerVersion(remoteVersion, localVersion))
                 {
                     Log($"New witty.json version available: {remoteVersion}", "INFO");
-                    if (UI.UpdateDialogs.ShowWittyUpdateDialog(remoteVersion))
+                    // Same silent semantics as CheckForAppsUpdate: background
+                    // checks apply the update without a dialog.
+                    if (silent || UI.UpdateDialogs.ShowWittyUpdateDialog(remoteVersion))
                     {
                         File.WriteAllText(WittyPath, remoteJson);
                         Log("witty.json updated successfully", "INFO");
@@ -316,7 +324,7 @@ namespace geetRPCS.Services
                 {
                     Log("Failed to fetch latest release", "ERROR");
                     if (showUpToDateMessage)
-                        UI.InfoDialog.Show(LanguageManager.Current.UpdateCheckFailed,
+                        UI.Modern.MessageDialog.ShowError(LanguageManager.Current.UpdateCheckFailed,
                             LanguageManager.Current.UpdateAvailableTitle);
                     return null;
                 }
@@ -340,7 +348,7 @@ namespace geetRPCS.Services
             {
                 Log($"Update check failed: {ex.Message}", "ERROR");
                 if (showUpToDateMessage)
-                    UI.InfoDialog.Show($"{LanguageManager.Current.UpdateCheckFailed}\n\n{ex.Message}",
+                    UI.Modern.MessageDialog.ShowError($"{LanguageManager.Current.UpdateCheckFailed}\n\n{ex.Message}",
                         LanguageManager.Current.UpdateAvailableTitle);
                 return null;
             }

@@ -28,12 +28,16 @@ namespace geetRPCS.Models
         public bool MouseEnergyEnabled { get; set; } = true;
         [JsonPropertyName("trayAnimationEnabled")]
         public bool TrayAnimationEnabled { get; set; } = true;
+        [JsonPropertyName("themeMode")]
+        public string ThemeMode { get; set; } = "System"; // System, Dark, Light
         [JsonPropertyName("telemetryEnabled")]
         public bool TelemetryEnabled { get; set; } = true;
         [JsonPropertyName("updateNotificationMode")]
         public string UpdateNotificationMode { get; set; } = "Notification"; // Notification, Dialog, Silent
         [JsonPropertyName("appOverrides")]
         public Dictionary<string, AppOverrideConfig> AppOverrides { get; set; } = new Dictionary<string, AppOverrideConfig>(StringComparer.OrdinalIgnoreCase);
+        [JsonPropertyName("customApps")]
+        public List<AppConfig> CustomApps { get; set; } = new List<AppConfig>();
         [JsonPropertyName("logLevel")]
         public string LogLevel { get; set; } = "INFO"; // DEBUG, INFO, WARN, ERROR
         [JsonPropertyName("autoUpdateEnabled")]
@@ -50,11 +54,25 @@ namespace geetRPCS.Models
         [JsonPropertyName("preferenceSaved")]
         public bool PreferenceSaved { get; set; } = false;
     }
+    /// <summary>Per-app user customization layered over the apps.json entry.
+    /// Every field is optional: null means "inherit the database default".
+    /// Persisted in settings.json (never in apps.json, which the apps-DB
+    /// updater overwrites wholesale).</summary>
     public class AppOverrideConfig
     {
         [JsonPropertyName("details")]
         public string Details { get; set; }
         [JsonPropertyName("state")]
         public string State { get; set; }
+        [JsonPropertyName("largeKey")]
+        public string LargeKey { get; set; }
+        [JsonPropertyName("largeText")]
+        public string LargeText { get; set; }
+        [JsonPropertyName("showTimestamps")]
+        public bool? ShowTimestamps { get; set; }
+        [JsonPropertyName("buttons")]
+        public List<AppButtonConfig> Buttons { get; set; }
+        [JsonPropertyName("clientId")]
+        public string ClientId { get; set; }
     }
 }

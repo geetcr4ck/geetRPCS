@@ -4,13 +4,14 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <NuGetAudit>false</NuGetAudit>
     <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
     <AssemblyName>geetRPCS</AssemblyName>
     <RootNamespace>geetRPCS</RootNamespace>
     <ApplicationIcon>rpicon.ico</ApplicationIcon>
-    <Version>1.4.1</Version>
-    <AssemblyVersion>1.4.1.0</AssemblyVersion>
-    <FileVersion>1.4.1.0</FileVersion>
-    <InformationalVersion>1.4.1</InformationalVersion>
+    <Version>1.4.2</Version>
+    <AssemblyVersion>1.4.2.0</AssemblyVersion>
+    <FileVersion>1.4.2.0</FileVersion>
+    <InformationalVersion>1.4.2</InformationalVersion>
     <Copyright>© 2026 geetcr4ck</Copyright>
     <Company>geetcr4ck</Company>
     <Product>geetRPCS</Product>
@@ -24,7 +25,12 @@
 
   <ItemGroup>
     <PackageReference Include="DiscordRichPresence" Version="1.6.1.70" />
-    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <PackageReference Include="ModernWpfUI" Version="1.0.0-preview.7" />
+    <!-- No explicit System.Text.Json package: the .NET 8 framework ships a newer
+         build (8.0.14) than the 8.0.5 package. An explicit reference ALSO passes
+         the STJ source-generator analyzer twice to the WPF temporary project
+         (package analyzer + targeting-pack analyzer), which makes the generator
+         emit JsonContext twice -> CS0579/CS0102 duplicates in the _wpftmp build. -->
   </ItemGroup>
 
   <ItemGroup>

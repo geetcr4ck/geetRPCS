@@ -365,6 +365,14 @@ namespace geetRPCS.Models
         public string MsgShortcutStartMenuRemoved { get; set; }
         [JsonPropertyName("menu_tray_animation")]
         public string MenuTrayAnimation { get; set; }
+        [JsonPropertyName("menu_theme")]
+        public string MenuTheme { get; set; }
+        [JsonPropertyName("menu_theme_system")]
+        public string MenuThemeSystem { get; set; }
+        [JsonPropertyName("menu_theme_dark")]
+        public string MenuThemeDark { get; set; }
+        [JsonPropertyName("menu_theme_light")]
+        public string MenuThemeLight { get; set; }
         [JsonPropertyName("msg_tray_animation_on")]
         public string MsgTrayAnimationOn { get; set; }
         [JsonPropertyName("msg_tray_animation_off")]
@@ -437,5 +445,149 @@ namespace geetRPCS.Models
         public string UpdateDialogUpToDateMessage { get; set; }
         [JsonPropertyName("update_btn_awesome")]
         public string UpdateBtnAwesome { get; set; }
+
+        // --- Custom Rich Presence editor (config.json GUI; key names keep the
+        //     historical "presence/default" wording, the UI label is Custom
+        //     Rich Presence) ---
+        [JsonPropertyName("menu_default_presence")]
+        public string MenuDefaultPresence { get; set; }
+        [JsonPropertyName("window_presence_title")]
+        public string WindowPresenceTitle { get; set; }
+        [JsonPropertyName("presence_appid_section")]
+        public string PresenceAppidSection { get; set; }
+        [JsonPropertyName("presence_idle_section")]
+        public string PresenceIdleSection { get; set; }
+        [JsonPropertyName("presence_active_section")]
+        public string PresenceActiveSection { get; set; }
+        [JsonPropertyName("presence_placeholders_hint")]
+        public string PresencePlaceholdersHint { get; set; }
+        [JsonPropertyName("presence_show_timestamps")]
+        public string PresenceShowTimestamps { get; set; }
+        [JsonPropertyName("presence_buttons_section")]
+        public string PresenceButtonsSection { get; set; }
+        [JsonPropertyName("presence_button_label")]
+        public string PresenceButtonLabel { get; set; }
+        [JsonPropertyName("presence_button_url")]
+        public string PresenceButtonUrl { get; set; }
+        [JsonPropertyName("presence_invalid_buttons")]
+        public string PresenceInvalidButtons { get; set; }
+        [JsonPropertyName("msg_presence_saved")]
+        public string MsgPresenceSaved { get; set; }
+
+        // --- Manage Apps: per-app override editor + custom apps ---
+        [JsonPropertyName("label_large_key")]
+        public string LabelLargeKey { get; set; }
+        [JsonPropertyName("label_large_text")]
+        public string LabelLargeText { get; set; }
+        [JsonPropertyName("label_client_id")]
+        public string LabelClientId { get; set; }
+        [JsonPropertyName("label_override_hint")]
+        public string LabelOverrideHint { get; set; }
+        [JsonPropertyName("manage_customize")]
+        public string ManageCustomize { get; set; }
+        [JsonPropertyName("manage_reset_override")]
+        public string ManageResetOverride { get; set; }
+        [JsonPropertyName("manage_add_app")]
+        public string ManageAddApp { get; set; }
+        [JsonPropertyName("manage_custom_badge")]
+        public string ManageCustomBadge { get; set; }
+        [JsonPropertyName("manage_delete_app")]
+        public string ManageDeleteApp { get; set; }
+        [JsonPropertyName("dialog_delete_app_title")]
+        public string DialogDeleteAppTitle { get; set; }
+        [JsonPropertyName("dialog_delete_app_message")]
+        public string DialogDeleteAppMessage { get; set; }
+        [JsonPropertyName("msg_app_added")]
+        public string MsgAppAdded { get; set; }
+        [JsonPropertyName("msg_app_removed")]
+        public string MsgAppRemoved { get; set; }
+        [JsonPropertyName("error_duplicate_process")]
+        public string ErrorDuplicateProcess { get; set; }
+
+        // --- Add Custom App dialog ---
+        [JsonPropertyName("window_add_app_title")]
+        public string WindowAddAppTitle { get; set; }
+        [JsonPropertyName("addapp_process")]
+        public string AddAppProcess { get; set; }
+        [JsonPropertyName("addapp_process_hint")]
+        public string AddAppProcessHint { get; set; }
+        [JsonPropertyName("addapp_name")]
+        public string AddAppName { get; set; }
+        [JsonPropertyName("addapp_match_mode")]
+        public string AddAppMatchMode { get; set; }
+        [JsonPropertyName("addapp_window_title")]
+        public string AddAppWindowTitle { get; set; }
+        [JsonPropertyName("addapp_title_match_mode")]
+        public string AddAppTitleMatchMode { get; set; }
+        [JsonPropertyName("addapp_details")]
+        public string AddAppDetails { get; set; }
+        [JsonPropertyName("addapp_invalid_process")]
+        public string AddAppInvalidProcess { get; set; }
+        [JsonPropertyName("addapp_btn_add")]
+        public string AddAppBtnAdd { get; set; }
+
+        // --- Help & Guide window ---
+        [JsonPropertyName("menu_help")]
+        public string MenuHelp { get; set; }
+        [JsonPropertyName("window_guide_title")]
+        public string WindowGuideTitle { get; set; }
+        [JsonPropertyName("guide_nav_getting_started")]
+        public string GuideNavGettingStarted { get; set; }
+        [JsonPropertyName("guide_nav_customize")]
+        public string GuideNavCustomize { get; set; }
+        [JsonPropertyName("guide_nav_features")]
+        public string GuideNavFeatures { get; set; }
+        [JsonPropertyName("guide_nav_updates")]
+        public string GuideNavUpdates { get; set; }
+        [JsonPropertyName("guide_nav_troubleshooting")]
+        public string GuideNavTroubleshooting { get; set; }
+        [JsonPropertyName("guide_nav_about")]
+        public string GuideNavAbout { get; set; }
+        [JsonPropertyName("guide_started_1")]
+        public string GuideStarted1 { get; set; }
+        [JsonPropertyName("guide_started_2")]
+        public string GuideStarted2 { get; set; }
+        [JsonPropertyName("guide_started_3")]
+        public string GuideStarted3 { get; set; }
+        [JsonPropertyName("guide_customize_1")]
+        public string GuideCustomize1 { get; set; }
+        [JsonPropertyName("guide_customize_2")]
+        public string GuideCustomize2 { get; set; }
+        [JsonPropertyName("guide_customize_3")]
+        public string GuideCustomize3 { get; set; }
+        [JsonPropertyName("guide_customize_4")]
+        public string GuideCustomize4 { get; set; }
+        [JsonPropertyName("guide_customize_5")]
+        public string GuideCustomize5 { get; set; }
+        [JsonPropertyName("guide_features_1")]
+        public string GuideFeatures1 { get; set; }
+        [JsonPropertyName("guide_features_2")]
+        public string GuideFeatures2 { get; set; }
+        [JsonPropertyName("guide_features_3")]
+        public string GuideFeatures3 { get; set; }
+        [JsonPropertyName("guide_features_4")]
+        public string GuideFeatures4 { get; set; }
+        [JsonPropertyName("guide_updates_1")]
+        public string GuideUpdates1 { get; set; }
+        [JsonPropertyName("guide_updates_2")]
+        public string GuideUpdates2 { get; set; }
+        [JsonPropertyName("guide_trouble_1")]
+        public string GuideTrouble1 { get; set; }
+        [JsonPropertyName("guide_trouble_2")]
+        public string GuideTrouble2 { get; set; }
+        [JsonPropertyName("guide_about_1")]
+        public string GuideAbout1 { get; set; }
+        [JsonPropertyName("guide_about_2")]
+        public string GuideAbout2 { get; set; }
+        [JsonPropertyName("guide_link_readme")]
+        public string GuideLinkReadme { get; set; }
+        [JsonPropertyName("guide_link_issues")]
+        public string GuideLinkIssues { get; set; }
+        [JsonPropertyName("guide_link_discussions")]
+        public string GuideLinkDiscussions { get; set; }
+        [JsonPropertyName("guide_link_releases")]
+        public string GuideLinkReleases { get; set; }
+        [JsonPropertyName("guide_link_app_id_doc")]
+        public string GuideLinkAppIdDoc { get; set; }
     }
 }

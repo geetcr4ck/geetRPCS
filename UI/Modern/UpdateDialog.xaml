@@ -1,0 +1,190 @@
+<!--
+    geetRPCS - Update dialog (ModernWpf / Fluent).
+    Replaces the four WinForms dialogs in UI/UpdateDialogs.cs:
+      - Enhanced update (version row, changelog, in-app download with
+        progress/cancel, PowerShell command, GitHub releases link)
+      - Apps database update (bool result)
+      - Witty texts update (bool result)
+      - Up-to-date confirmation
+    One window; each static factory configures the visible sections.
+-->
+<Window x:Class="geetRPCS.UI.Modern.UpdateDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        Title="Update"
+        Width="520"
+        SizeToContent="Height"
+        MaxHeight="720"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        ui:ThemeManager.IsThemeAware="True"
+        UseLayoutRounding="True"
+        Background="{DynamicResource ApplicationPageBackgroundThemeBrush}"
+        Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="20,18,20,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="44" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="HeaderIcon" Grid.Column="0" FontSize="28"
+                       VerticalAlignment="Top" HorizontalAlignment="Center" />
+            <StackPanel Grid.Column="1">
+                <TextBlock x:Name="HeaderTitle" FontSize="18" FontWeight="SemiBold" />
+                <TextBlock x:Name="HeaderSubtitle" FontSize="13" Margin="0,4,0,0"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" Margin="20,16,20,0" VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Version row -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock x:Name="VersionLeftLabel" FontSize="12"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Name="VersionLeftValue" FontSize="20" FontWeight="SemiBold"
+                                   Margin="0,2,0,0" />
+                    </StackPanel>
+                    <StackPanel x:Name="RightVersionGrid" Grid.Column="1" Margin="16,0,0,0">
+                        <TextBlock x:Name="VersionRightLabel" FontSize="12"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Name="VersionRightValue" FontSize="20" FontWeight="SemiBold"
+                                   Margin="0,2,0,0" />
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock x:Name="ReleaseDateText" Grid.Row="1" FontSize="12"
+                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                           Margin="0,12,0,0" />
+
+                <TextBlock x:Name="ChangelogHeader" Grid.Row="2" FontSize="14" FontWeight="SemiBold"
+                           Margin="0,14,0,0" />
+                <TextBox x:Name="ChangelogBox" Grid.Row="3" Height="100" Margin="0,6,0,0"
+                         FontSize="12" IsReadOnly="True" TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top"
+                         Padding="8,6" />
+
+                <TextBlock x:Name="HowToHeader" Grid.Row="4" FontSize="14" FontWeight="SemiBold"
+                           Margin="0,14,0,0" />
+
+                <!-- In-app update -->
+                <Border x:Name="InAppBox" Grid.Row="5" Margin="0,8,0,0" CornerRadius="6" Padding="12"
+                        Background="{DynamicResource SubtleFillColorSecondaryBrush}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock x:Name="InAppTitle" Grid.Row="0" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <Grid Grid.Row="1" Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="UpdateNowBtn" Grid.Column="0" Width="150" Height="34"
+                                    Style="{StaticResource AccentButtonStyle}" FontSize="13"
+                                    Click="OnUpdateNowClick" />
+                            <ProgressBar x:Name="ProgressBar" Grid.Column="1" Height="24"
+                                         Margin="12,0" VerticalAlignment="Center"
+                                         Visibility="Collapsed" />
+                            <Button x:Name="CancelBtn" Grid.Column="2" Width="84" Height="30"
+                                    FontSize="12" Visibility="Collapsed"
+                                    Click="OnCancelDownloadClick" />
+                        </Grid>
+                        <TextBlock x:Name="StatusText" Grid.Row="2" FontSize="12"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Margin="0,8,0,0" TextWrapping="Wrap" Visibility="Collapsed" />
+                    </Grid>
+                </Border>
+
+                <!-- PowerShell method -->
+                <Border x:Name="PsBox" Grid.Row="6" Margin="0,8,0,0" CornerRadius="6" Padding="12"
+                        Background="{DynamicResource SubtleFillColorSecondaryBrush}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock x:Name="PsTitle" Grid.Row="0" FontSize="13" FontWeight="SemiBold" />
+                        <Grid Grid.Row="1" Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="CmdBox" Grid.Column="0" Height="30"
+                                     VerticalContentAlignment="Center" FontFamily="Consolas" FontSize="12"
+                                     IsReadOnly="True" />
+                            <Button x:Name="CopyBtn" Grid.Column="1" Width="84" Height="30"
+                                    Margin="10,0,0,0" FontSize="12" Click="OnCopyClick" />
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- GitHub method -->
+                <Border x:Name="GithubBox" Grid.Row="7" Margin="0,8,0,0" CornerRadius="6" Padding="12"
+                        Background="{DynamicResource SubtleFillColorSecondaryBrush}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="GithubTitle" Grid.Column="0" FontSize="13" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+                        <Button x:Name="OpenLinkBtn" Grid.Column="1" Width="120" Height="30"
+                                FontSize="12" Click="OnOpenLinkClick" />
+                    </Grid>
+                </Border>
+
+                <!-- Simple-mode body text -->
+                <TextBlock x:Name="InfoText" Grid.Row="8" FontSize="13"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           TextWrapping="Wrap" HorizontalAlignment="Center"
+                           Margin="10,20,10,10" Visibility="Collapsed" />
+            </Grid>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Margin="0,16,0,0" Padding="20,12"
+                BorderBrush="{DynamicResource TextFillColorTertiaryBrush}"
+                BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="CloseFooterBtn" Content="Close" Width="100" Height="34"
+                        FontSize="13" IsCancel="True" Click="OnCloseClick" />
+                <Button x:Name="PrimaryFooterBtn" Width="160" Height="34" Margin="10,0,0,0"
+                        Style="{StaticResource AccentButtonStyle}" FontSize="13"
+                        Visibility="Collapsed" Click="OnPrimaryClick" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

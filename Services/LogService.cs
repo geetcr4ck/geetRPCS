@@ -34,6 +34,7 @@ namespace geetRPCS.Services
     {
         private static readonly object _lock = new object();
         private static StreamWriter? _writer;
+        private static System.Threading.Timer? _flushTimer;
         private static string _logPath = null!;
         private static LogLevel _minLevel = LogLevel.INFO;
         private static bool _initialized = false;
@@ -43,6 +44,9 @@ namespace geetRPCS.Services
         private const int MAX_BACKUP_FILES = 3;
         private const int ROTATION_CHECK_INTERVAL = 100; // Check every N writes
         private static int _writeCount = 0;
+        // Set by Write, cleared by Flush: the 1s flush timer skips the lock and
+        // the stream flush entirely during quiet periods.
+        private static volatile bool _dirty;
         private static readonly string AppFolder = Utils.AppPaths.UserDataDir;
 
         // Initialize the log service. Must be called once at startup.
@@ -58,7 +62,14 @@ namespace geetRPCS.Services
                 try
                 {
                     RotateIfNeeded();
-                    _writer = new StreamWriter(_logPath, append: true) { AutoFlush = true };
+                    // Buffered: AutoFlush=false means Write() never touches the disk
+                    // synchronously. A 1s timer + a flush every N writes keeps the
+                    // file near-real-time. (AutoFlush=true used to do a synchronous
+                    // flush per call under a global lock — with logLevel DEBUG that
+                    // put a disk write on every keystroke and every UI action, and
+                    // UI threads blocked behind background loggers' writes.)
+                    _writer = new StreamWriter(_logPath, append: true) { AutoFlush = false };
+                    _flushTimer = new System.Threading.Timer(_ => Flush(), null, 1000, 1000);
                     _initialized = true;
                 }
                 catch (Exception ex)
@@ -67,6 +78,11 @@ namespace geetRPCS.Services
                 }
             }
         }
+
+        // Hot-path callers guard interpolated-string allocations with this:
+        // Write() drops sub-min-level messages but the caller's $"..." string
+        // is built anyway.
+        internal static bool IsDebugEnabled => _minLevel <= LogLevel.DEBUG;
 
         // Set the minimum log level at runtime
         public static void SetMinLevel(LogLevel level)
@@ -123,15 +139,20 @@ namespace geetRPCS.Services
                         Initialize();
                     }
 
-                    // Check if rotation needed (throttled)
+                    // Check if rotation needed (throttled); flush first so the size
+                    // check sees the buffered content.
                     if (++_writeCount % ROTATION_CHECK_INTERVAL == 0)
+                    {
+                        _writer?.Flush();
                         RotateIfNeeded();
+                    }
 
                     string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
                     string levelStr = level.ToString();
                     string logLine = $"[{timestamp}] [{module}] [{levelStr}] {message}";
 
                     _writer?.WriteLine(logLine);
+                    _dirty = true;
 
                     // Also write to debug output for development
                     System.Diagnostics.Debug.WriteLine(logLine);
@@ -140,6 +161,18 @@ namespace geetRPCS.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"[LogService] Write failed: {ex.Message}");
+            }
+        }
+
+        // Flush buffered lines to disk (called by the 1s timer and on exit).
+        private static void Flush()
+        {
+            if (!_dirty) return;
+            lock (_lock)
+            {
+                try { _writer?.Flush(); }
+                catch { }
+                _dirty = false;
             }
         }
 
@@ -171,7 +204,7 @@ namespace geetRPCS.Services
                 File.Move(_logPath, backup1);
 
                 // Reopen writer for new file
-                _writer = new StreamWriter(_logPath, append: true) { AutoFlush = true };
+                _writer = new StreamWriter(_logPath, append: true) { AutoFlush = false };
 
                 Info("Log file rotated due to size limit", "LogService");
             }
@@ -215,6 +248,8 @@ namespace geetRPCS.Services
             {
                 try
                 {
+                    _flushTimer?.Dispose();
+                    _flushTimer = null;
                     Info("LogService shutting down", "LogService");
                     _writer?.Flush();
                     _writer?.Close();

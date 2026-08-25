@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using DiscordRPC;
@@ -38,12 +39,17 @@ namespace geetRPCS.Services
         void AnimateOnSwitch();
     }
 
-    internal sealed class AppCoordinator : IDisposable
+    internal sealed class AppCoordinator : IDisposable, ITrayCoordinator
     {
         // --- Constants ---
         private const int STATS_SAVE_INTERVAL_MS = 5 * 60 * 1000;  // 5 minutes
         private const int WITTY_ROTATION_INTERVAL_MS = 5000;       // 5 seconds
-        private const int MIN_ENERGY_RPC_INTERVAL_SECONDS = 5;     // energy RPC rate limit
+        // Minimum dwell between energy-driven presence rebuilds. The mouse
+        // energy state flapped Normal/Relaxing every 5-10s during casual use,
+        // each flap rebuilding and re-pushing the full presence; 30s keeps the
+        // state accurate while the churn is gone. Lower it back to 5 for more
+        // responsive energy text at the cost of CPU/RPC traffic.
+        private const int MIN_ENERGY_RPC_INTERVAL_SECONDS = 30;
 
         // --- Outputs / state ---
         private readonly IAppHost _host;
@@ -52,6 +58,7 @@ namespace geetRPCS.Services
         private Config _config = new Config();
         private Dictionary<string, DateTime> _appTimers = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
         private string _currentApp;
+        private IntPtr _currentHWnd;
         private bool _privateMode, _isPaused;
         private readonly HashSet<string> _disabledApps = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _appsUsedThisSession = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -59,6 +66,7 @@ namespace geetRPCS.Services
         private DateTime _lastStatsUpdate = DateTime.Now, _sessionStartTime, _lastEnergyRpcUpdate = DateTime.MinValue;
 
         private readonly object _lock = new object();
+        private readonly object _presenceUpdateLock = new object();
         private PresenceBuilder _presenceBuilder;
         private StatsCoordinator _stats;
         private MouseActivityTracker _mouseTracker;
@@ -78,6 +86,9 @@ namespace geetRPCS.Services
         public bool PrivateMode => _privateMode;
         public string CurrentApp => _currentApp;
         public StatsCoordinator Stats => _stats;
+
+        // Interface view: the tray menu only needs the stats views/exports.
+        IStatsCoordinator ITrayCoordinator.Stats => _stats;
         public IReadOnlyCollection<string> DisabledApps => _disabledApps;
         public Dictionary<string, AppOverrideConfig> Overrides => SettingsService.Instance.AppOverrides;
         public TimeSpan SessionDuration => DateTime.Now - _sessionStartTime;
@@ -126,11 +137,17 @@ namespace geetRPCS.Services
         public void StartTimers()
         {
             _statsSaveTimer = new System.Windows.Forms.Timer { Interval = STATS_SAVE_INTERVAL_MS };
-            _statsSaveTimer.Tick += async (_, __) =>
+            _statsSaveTimer.Tick += (_, __) =>
             {
-                string json = Stats.PrepareJson();
-                await AppStatistics.WriteJsonAsync(json);
-                LogService.Log("Statistics auto-saved", "INFO", "AppCoordinator");
+                // JSON serialization off the UI thread too: a WinForms timer ticks
+                // even while a modal WPF window is open, and this is the last
+                // periodic UI-thread work in the app.
+                Task.Run(async () =>
+                {
+                    string json = Stats.PrepareJson();
+                    await AppStatistics.WriteJsonAsync(json);
+                    LogService.Log("Statistics auto-saved", "INFO", "AppCoordinator");
+                });
             };
             _statsSaveTimer.Start();
 
@@ -142,7 +159,17 @@ namespace geetRPCS.Services
                     if (NarrativeService.ShouldRotate(_currentApp)) RefreshCurrentPresence();
                 }
             };
-            _wittyTimer.Start();
+            // Started/stopped by SetCurrentApp with the tracked app: an
+            // always-running timer woke the UI thread every 5s forever just to
+            // null-check while no app was tracked.
+        }
+
+        /// <summary>All writes to the tracked-app field go through here so the
+        /// witty rotation timer only runs while there is an app to rotate for.</summary>
+        private void SetCurrentApp(string value)
+        {
+            _currentApp = value;
+            if (_wittyTimer != null) _wittyTimer.Enabled = !string.IsNullOrEmpty(value);
         }
 
         public void StartAutoUpdateCheck()
@@ -212,7 +239,11 @@ namespace geetRPCS.Services
             {
                 if (_currentRpcClientId != _config.Discord?.ApplicationId)
                     InitializeRpc(null); // Revert to default
-                _currentApp = null;
+                lock (_lock)
+                {
+                    SetCurrentApp(null);
+                    _currentHWnd = IntPtr.Zero;
+                }
                 string energyState = null;
                 if (SettingsService.Instance.MouseEnergyEnabled && _mouseTracker != null)
                     energyState = _mouseTracker.GetEnergyStateText();
@@ -226,6 +257,16 @@ namespace geetRPCS.Services
 
         public void OnAppDetected(string proc, System.IntPtr hWnd)
         {
+            // Serialize watcher callbacks and periodic refreshes so an older
+            // normal-window update can never overwrite a newer private-window one.
+            lock (_presenceUpdateLock)
+            {
+                OnAppDetectedCore(proc, hWnd);
+            }
+        }
+
+        private void OnAppDetectedCore(string proc, System.IntPtr hWnd)
+        {
             if (_isPaused) return;
             bool isDisabled;
             lock (_lock) { isDisabled = _disabledApps.Contains(proc); }
@@ -235,7 +276,7 @@ namespace geetRPCS.Services
                 lock (_lock) { wasCurrent = _currentApp == proc; }
                 if (wasCurrent)
                 {
-                    LogService.Log($"App '{proc}' is disabled. Clearing presence.", "DEBUG", "AppCoordinator");
+                    if (LogService.IsDebugEnabled) LogService.Log($"App '{proc}' is disabled. Clearing presence.", "DEBUG", "AppCoordinator");
                     PublishIdlePresence();
                 }
                 return;
@@ -249,24 +290,27 @@ namespace geetRPCS.Services
                     if (!_appTimers.ContainsKey(proc))
                     {
                         _appTimers[proc] = DateTime.UtcNow;
-                        LogService.Log($"New app timer started: {proc}", "DEBUG", "AppCoordinator");
+                        if (LogService.IsDebugEnabled) LogService.Log($"New app timer started: {proc}", "DEBUG", "AppCoordinator");
                     }
                 }
 
                 string prevApp = _currentApp;
                 if (SettingsService.Instance.TrayAnimationEnabled && prevApp != proc)
                 {
-                    LogService.Log($"App switch detected: '{prevApp ?? "null"}' -> '{proc}' - Triggering animation", "DEBUG", "AppCoordinator");
+                    if (LogService.IsDebugEnabled) LogService.Log($"App switch detected: '{prevApp ?? "null"}' -> '{proc}' - Triggering animation", "DEBUG", "AppCoordinator");
                     _host.AnimateOnSwitch();
                 }
 
                 lock (_lock)
                 {
-                    _currentApp = proc;
+                    SetCurrentApp(proc);
+                    _currentHWnd = hWnd;
                     _appsUsedThisSession.Add(proc);
                 }
 
-                var appConfig = AppConfigManager.Apps.FirstOrDefault(a => a.Process?.Equals(proc, StringComparison.OrdinalIgnoreCase) == true);
+                // Effective entry: a per-app clientId override (Manage Apps)
+                // must switch the Discord client just like an apps.json one.
+                var appConfig = AppConfigManager.GetEffectiveApp(proc);
                 string targetClientId = !string.IsNullOrEmpty(appConfig?.ClientId) ? appConfig.ClientId : _config.Discord?.ApplicationId;
                 if (_currentRpcClientId != targetClientId)
                 {
@@ -299,26 +343,49 @@ namespace geetRPCS.Services
             catch (Exception ex) { LogService.Log($"OnAppDetected error: {ex.Message}", "ERROR", "AppCoordinator"); }
         }
 
-        /// <summary>Reassembles the presence for the current app (used on mode toggles and witty rotation).</summary>
+        private int _refreshInFlight; // 1 while a presence refresh runs on a background thread
+
+        /// <summary>Reassembles the presence for the current app (used on mode toggles and witty rotation).
+        /// Runs on a BACKGROUND thread: Process.GetProcessesByName + MainWindowHandle can take tens of
+        /// ms on a loaded machine, and this is called periodically by the 5s witty timer — a UI-thread
+        /// enumeration there hitched typing/clear-X while the modal ManageApps window was open (the
+        /// modal frame still pumps WM_TIMER).</summary>
         public void RefreshCurrentPresence()
         {
             if (_currentApp == null || _currentApp == "config") return;
+            // Never run the enumeration on the caller's thread (UI thread when called
+            // from the witty timer / mode toggles). In-flight guard: a refresh that
+            // takes longer than the 5s witty interval must not pile up.
+            if (Interlocked.Exchange(ref _refreshInFlight, 1) != 0) return;
+            Task.Run(() =>
+            {
+                try { RefreshCurrentPresenceCore(); }
+                catch (Exception ex) { LogService.Log($"RefreshCurrentPresence error: {ex.Message}", "ERROR", "AppCoordinator"); }
+                finally { Interlocked.Exchange(ref _refreshInFlight, 0); }
+            });
+        }
+
+        private void RefreshCurrentPresenceCore()
+        {
+            string currentApp;
+            IntPtr currentHWnd;
+            lock (_lock)
+            {
+                currentApp = _currentApp;
+                currentHWnd = _currentHWnd;
+            }
+
+            if (currentApp == null || currentApp == "config") return;
             try
             {
-                var processes = System.Diagnostics.Process.GetProcessesByName(_currentApp);
-                try
+                // Reuse the exact foreground window captured by TaskbarWatcher
+                // instead of guessing via Process.MainWindowHandle (a browser can
+                // own several windows; the guess can pick the non-private one).
+                lock (_presenceUpdateLock)
                 {
-                    foreach (var process in processes)
-                    {
-                        try
-                        {
-                            IntPtr hwnd = process.MainWindowHandle;
-                            if (hwnd != IntPtr.Zero) { OnAppDetected(_currentApp, hwnd); break; }
-                        }
-                        catch { }
-                    }
+                    if (!TaskbarWatcher.IsWindowForProcess(currentApp, currentHWnd)) return;
+                    OnAppDetectedCore(currentApp, currentHWnd);
                 }
-                finally { foreach (var p in processes) p.Dispose(); }
             }
             catch (Exception ex) { LogService.Log($"RefreshCurrentPresence error: {ex.Message}", "ERROR", "AppCoordinator"); }
         }
@@ -358,7 +425,11 @@ namespace geetRPCS.Services
                 if (_currentApp != null && _currentApp != "config") RefreshCurrentPresence();
                 else PublishIdlePresence();
             }
-            MemoryHelper.TrimMemory();
+            // Defer the trim off the UI thread: a full blocking Gen2 GC +
+            // EmptyWorkingSet here hitches the hotkey/tray path (pause toggles
+            // are user-visible UI actions). The deferred pattern is the same one
+            // used for the window-close trims.
+            Task.Run(() => MemoryHelper.TrimMemory());
         }
 
         public void TogglePrivateMode()
@@ -433,7 +504,7 @@ namespace geetRPCS.Services
                         string.Format(LanguageManager.Current.ErrorDiscordConnection, "Connection failed"), ToolTipIcon.Error);
                     return;
                 }
-                lock (_lock) { _currentApp = null; _appTimers.Clear(); }
+                lock (_lock) { SetCurrentApp(null); _currentHWnd = IntPtr.Zero; _appTimers.Clear(); }
                 if (!_isPaused) PublishIdlePresence();
                 _host.ShowBalloon(LanguageManager.Current.AppName, LanguageManager.Current.MsgConfigReloaded, ToolTipIcon.Info);
                 LogService.Log("Configuration reloaded successfully", "INFO", "AppCoordinator");
@@ -457,19 +528,85 @@ namespace geetRPCS.Services
                 else
                 {
                     _disabledApps.Add(proc);
-                    if (_currentApp == proc) { _currentApp = null; PublishIdlePresence(); }
+                    if (_currentApp == proc)
+                    {
+                        SetCurrentApp(null);
+                        _currentHWnd = IntPtr.Zero;
+                        PublishIdlePresence();
+                    }
                 }
             }
         }
 
         public void SetAppOverride(string proc, string details, string state)
         {
+            // Legacy details/state-only signature kept for existing call sites.
+            SetAppOverride(proc, new AppOverrideConfig { Details = details, State = state });
+        }
+
+        /// <summary>Stores (or removes, when every field is empty) a per-app
+        /// override. Callers persist via SaveSettingsAsync afterwards.</summary>
+        public void SetAppOverride(string proc, AppOverrideConfig ov)
+        {
             lock (_lock)
             {
-                if (string.IsNullOrWhiteSpace(details) && string.IsNullOrWhiteSpace(state))
+                bool empty = ov == null || (string.IsNullOrWhiteSpace(ov.Details)
+                    && string.IsNullOrWhiteSpace(ov.State)
+                    && string.IsNullOrWhiteSpace(ov.LargeKey)
+                    && string.IsNullOrWhiteSpace(ov.LargeText)
+                    && string.IsNullOrWhiteSpace(ov.ClientId)
+                    && ov.ShowTimestamps == null
+                    && (ov.Buttons == null || ov.Buttons.Count == 0));
+                if (empty)
                     SettingsService.Instance.AppOverrides.Remove(proc);
                 else
-                    SettingsService.Instance.AppOverrides[proc] = new AppOverrideConfig { Details = details, State = state };
+                    SettingsService.Instance.AppOverrides[proc] = ov;
+            }
+        }
+
+        /// <summary>Adds (or replaces, same process) a user custom app, reloads
+        /// the merged app list and refreshes the live presence. Uses
+        /// AppConfigManager.Reload instead of a full ReloadConfig so the RPC
+        /// connection is not torn down for what is a small data change.</summary>
+        public void AddCustomApp(AppConfig app)
+        {
+            if (app == null || string.IsNullOrWhiteSpace(app.Process)) return;
+            lock (_lock)
+            {
+                var custom = SettingsService.Instance.CustomApps;
+                custom.RemoveAll(c => string.Equals(c.Process, app.Process, StringComparison.OrdinalIgnoreCase));
+                custom.Add(app);
+                AppConfigManager.Reload();
+                TaskbarWatcher.Reload();
+                Placeholders.Reload();
+            }
+            _ = SaveSettingsAsync();
+            RefreshCurrentPresence();
+        }
+
+        /// <summary>Removes a user custom app. If it replaced a built-in entry,
+        /// the built-in comes back after the merge; if it is the current app,
+        /// presence falls back to idle.</summary>
+        public void RemoveCustomApp(string proc)
+        {
+            if (string.IsNullOrWhiteSpace(proc)) return;
+            lock (_lock)
+            {
+                SettingsService.Instance.CustomApps.RemoveAll(c => string.Equals(c.Process, proc, StringComparison.OrdinalIgnoreCase));
+                AppConfigManager.Reload();
+                TaskbarWatcher.Reload();
+                Placeholders.Reload();
+                if (_currentApp != null && _currentApp.Equals(proc, StringComparison.OrdinalIgnoreCase))
+                {
+                    SetCurrentApp(null);
+                    _currentHWnd = IntPtr.Zero;
+                }
+            }
+            _ = SaveSettingsAsync();
+            if (!_isPaused)
+            {
+                if (_currentApp != null) RefreshCurrentPresence();
+                else PublishIdlePresence();
             }
         }
 
@@ -490,24 +627,29 @@ namespace geetRPCS.Services
             return true;
         }
 
-        /// <summary>Persists a changed Discord application id to config.json and reloads.</summary>
-        public bool ChangeApplicationId(string newId)
+        /// <summary>Serializes a Config exactly the way config.json is persisted
+        /// (indented, source-gen). Separate static so tests can round-trip the
+        /// JSON mapping without writing to the real config path.</summary>
+        internal static string SerializeConfig(Config cfg)
         {
-            if (_config?.Discord == null || !IsValidApplicationId(newId)) return false;
-            string currentId = _config.Discord.ApplicationId;
-            if (newId.Trim() == currentId) return false;
+            var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+            return System.Text.Json.JsonSerializer.Serialize(cfg, typeof(Config), new Utils.JsonContext(options));
+        }
+
+        /// <summary>Writes the given config to config.json (whole-file rewrite,
+        /// the same behavior the Change App ID flow has always had) and reloads.</summary>
+        public bool SaveConfig(Config cfg)
+        {
+            if (cfg?.Discord == null || !IsValidApplicationId(cfg.Discord.ApplicationId)) return false;
             try
             {
-                _config.Discord.ApplicationId = newId.Trim();
-                var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
-                System.IO.File.WriteAllText(AppPaths.ConfigPath,
-                    System.Text.Json.JsonSerializer.Serialize(_config, typeof(Config), new Utils.JsonContext(options)));
+                System.IO.File.WriteAllText(AppPaths.ConfigPath, SerializeConfig(cfg));
                 try { ReloadConfig(); } catch { }
                 return true;
             }
             catch (Exception ex)
             {
-                LogService.Log($"Failed to save App ID: {ex.Message}", "ERROR", "AppCoordinator");
+                LogService.Log($"Failed to save config: {ex.Message}", "ERROR", "AppCoordinator");
                 return false;
             }
         }

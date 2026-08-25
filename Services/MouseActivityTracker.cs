@@ -31,7 +31,10 @@ namespace geetRPCS.Services
         private const int IDLE_TIMEOUT_SECONDS = 30;
         private const int HIGH_CLICKS_PER_MINUTE = 80;      // Intense clicking (gaming, editing)
         private const int MEDIUM_CLICKS_PER_MINUTE = 25;    // Regular clicking
-        private const int STATE_STABILITY_THRESHOLD = 4;    // ~2 seconds (4 × 500ms analysis intervals)
+        // State must be consistent for ~10 seconds before it is committed (20 x
+        // 500ms analysis intervals). The old 2s threshold let casual mouse use
+        // flap Normal/Relaxing every 5-10s, each flap rebuilding the presence.
+        private const int STATE_STABILITY_THRESHOLD = 20;
         public enum EnergyLevel { Sleeping, Relaxing, Normal, Focused, Rush }
         #endregion
         #region ----- Fields -----
@@ -124,7 +127,17 @@ namespace geetRPCS.Services
             _isEnabled = enabled;
             if (!enabled)
             {
+                // The LL hook is the expensive part (a managed callback for every
+                // mouse event system-wide, up to ~1000/s): uninstall it instead
+                // of merely skipping accumulation. The 2Hz analysis thread is
+                // negligible and keeps running until Stop().
+                UninstallHook();
                 lock (_readLock) _currentEnergy = EnergyLevel.Normal;
+                _lastHookPosition = Point.Empty;
+            }
+            else if (_isRunning && !_isHookInstalled)
+            {
+                InstallHook();
             }
             Log($"Mouse Activity Tracker enabled: {enabled}", "INFO");
         }
@@ -314,7 +327,9 @@ namespace geetRPCS.Services
                             {
                                 _currentEnergy = newEnergy;
                                 try { OnEnergyChanged?.Invoke(newEnergy, avgVelocity, totalClicksInMinute); } catch {}
-                                Log($"Energy: {newEnergy} (V: {avgVelocity:F0}, CPM: {totalClicksInMinute})", "INFO");
+                                // DEBUG: these transitions were 27% of all production
+                                // log lines at INFO (Normal/Relaxing flapping).
+                                Log($"Energy: {newEnergy} (V: {avgVelocity:F0}, CPM: {totalClicksInMinute})", "DEBUG");
                             }
                         }
                         else

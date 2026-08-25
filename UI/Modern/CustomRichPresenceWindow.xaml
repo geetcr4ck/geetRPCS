@@ -1,0 +1,176 @@
+<!--
+    geetRPCS - Custom Rich Presence editor (ModernWpf / Fluent).
+    The one-stop GUI for building your own Rich Presence without opening an
+    editor: idle/active texts with click-to-insert placeholders, elapsed-time
+    toggle, buttons, and (advanced) your own Discord Application ID with the
+    tutorial/asset-pack links. Save writes through ITrayCoordinator.SaveConfig;
+    Reset Default restores GetDefaultConfig().
+-->
+<Window x:Class="geetRPCS.UI.Modern.CustomRichPresenceWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        Title="Custom Rich Presence"
+        Width="560"
+        MaxHeight="760"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        ui:ThemeManager.IsThemeAware="True"
+        UseLayoutRounding="True"
+        Background="{DynamicResource ApplicationPageBackgroundThemeBrush}"
+        Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="24,20,24,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock x:Name="IdleSectionText" Grid.Row="0" FontSize="13" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+
+            <StackPanel Grid.Row="1" Margin="0,8,0,0">
+                <TextBlock x:Name="IdleDetailsLabel" FontSize="12"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                <TextBox x:Name="IdleDetailsBox" Margin="0,4,0,0" Height="30" VerticalContentAlignment="Center"
+                         TextChanged="OnFieldChanged" />
+                <TextBlock x:Name="IdleStateLabel" Margin="0,10,0,0" FontSize="12"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                <TextBox x:Name="IdleStateBox" Margin="0,4,0,0" Height="30" VerticalContentAlignment="Center"
+                         TextChanged="OnFieldChanged" />
+            </StackPanel>
+
+            <TextBlock x:Name="ActiveSectionText" Grid.Row="2" Margin="0,16,0,0" FontSize="13" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+
+            <StackPanel Grid.Row="3" Margin="0,8,0,0">
+                <TextBlock x:Name="ActiveDetailsLabel" FontSize="12"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                <TextBox x:Name="ActiveDetailsBox" Margin="0,4,0,0" Height="30" VerticalContentAlignment="Center"
+                         GotKeyboardFocus="OnTemplateFocus" TextChanged="OnFieldChanged" />
+                <TextBlock x:Name="ActiveStateLabel" Margin="0,10,0,0" FontSize="12"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                <TextBox x:Name="ActiveStateBox" Margin="0,4,0,0" Height="30" VerticalContentAlignment="Center"
+                         GotKeyboardFocus="OnTemplateFocus" TextChanged="OnFieldChanged" />
+
+                <!-- Click-to-insert placeholder chips (target = last focused template box) -->
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <TextBlock x:Name="PlaceholdersHint" VerticalAlignment="Center" FontSize="12"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                    <Button x:Name="PhAppName" Content="{}{app_name}" Margin="8,0,0,0" Padding="8,2"
+                            FontSize="12" Click="OnPlaceholderClick" />
+                    <Button x:Name="PhProcessName" Content="{}{process_name}" Margin="4,0,0,0" Padding="8,2"
+                            FontSize="12" Click="OnPlaceholderClick" />
+                    <Button x:Name="PhWindowTitle" Content="{}{window_title}" Margin="4,0,0,0" Padding="8,2"
+                            FontSize="12" Click="OnPlaceholderClick" />
+                    <Button x:Name="PhWittyText" Content="{}{witty_text}" Margin="4,0,0,0" Padding="8,2"
+                            FontSize="12" Click="OnPlaceholderClick" />
+                </StackPanel>
+
+                <CheckBox x:Name="TimestampsCheck" Margin="0,12,0,0" Checked="OnFieldChanged" Unchecked="OnFieldChanged" />
+            </StackPanel>
+
+            <TextBlock x:Name="ButtonsSectionText" Grid.Row="4" Margin="0,16,0,0" FontSize="13" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+
+            <StackPanel Grid.Row="5" Margin="0,8,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="ButtonLabelHeader" Grid.Column="0" FontSize="12"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <TextBlock x:Name="ButtonUrlHeader" Grid.Column="2" FontSize="12"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                </Grid>
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="Button1LabelBox" Grid.Column="0" Height="30" MaxLength="32"
+                             VerticalContentAlignment="Center" TextChanged="OnFieldChanged" />
+                    <TextBox x:Name="Button1UrlBox" Grid.Column="2" Height="30" VerticalContentAlignment="Center"
+                             TextChanged="OnFieldChanged" />
+                </Grid>
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="Button2LabelBox" Grid.Column="0" Height="30" MaxLength="32"
+                             VerticalContentAlignment="Center" TextChanged="OnFieldChanged" />
+                    <TextBox x:Name="Button2UrlBox" Grid.Column="2" Height="30" VerticalContentAlignment="Center"
+                             TextChanged="OnFieldChanged" />
+                </Grid>
+                <TextBlock x:Name="InvalidButtonsText" Margin="0,6,0,0" FontSize="12"
+                           Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                           TextWrapping="Wrap" Visibility="Collapsed" />
+            </StackPanel>
+
+            <!-- Advanced: your own Discord application (was the Change App ID tray dialog) -->
+            <Expander x:Name="AppIdExpander" Grid.Row="6" Margin="0,16,0,0">
+                <Expander.Header>
+                    <TextBlock x:Name="AppIdSectionText" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                </Expander.Header>
+                <StackPanel Margin="0,8,0,0">
+                    <TextBlock x:Name="AppIdDescriptionText" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <!-- Amber warning callout, shown when the localized message has a "\n\nWARNING: ..." part -->
+                    <Border x:Name="AppIdWarningPanel" Margin="0,8,0,0" Visibility="Collapsed"
+                            Background="{DynamicResource SystemFillColorCautionBackgroundBrush}" CornerRadius="6">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="4" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Background="{DynamicResource SystemFillColorCautionBrush}" CornerRadius="6,0,0,6" />
+                            <TextBlock x:Name="AppIdWarningText" Grid.Column="1" Margin="12,9,12,9"
+                                       Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                       FontSize="12" TextWrapping="Wrap" />
+                        </Grid>
+                    </Border>
+                    <TextBox x:Name="AppIdBox" Margin="0,8,0,0" Height="32" VerticalContentAlignment="Center"
+                             FontSize="14" TextChanged="OnFieldChanged" />
+                    <TextBlock x:Name="AppIdErrorText" Margin="0,6,0,0" FontSize="12"
+                               Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                    <TextBlock Margin="0,8,0,0" FontSize="12">
+                        <Hyperlink x:Name="TutorialLink"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                   TextDecorations="None" Click="OnTutorialLinkClick">
+                            <Run x:Name="TutorialRun" />
+                        </Hyperlink>
+                        <Run Text="     " />
+                        <Hyperlink x:Name="AssetsLink"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                   TextDecorations="None" Click="OnAssetsLinkClick">
+                            <Run x:Name="AssetsRun" />
+                        </Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+            </Expander>
+
+            <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+                <Button x:Name="CancelButton" Width="96" Height="32" Margin="0,0,8,0" IsCancel="True" />
+                <Button x:Name="ResetButton" Width="128" Height="32" Margin="0,0,8,0" Click="OnResetClick" />
+                <Button x:Name="SaveButton" Width="96" Height="32"
+                        Style="{StaticResource AccentButtonStyle}"
+                        IsDefault="True" Click="OnSaveClick" />
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Window>

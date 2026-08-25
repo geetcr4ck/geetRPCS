@@ -105,19 +105,19 @@ namespace geetRPCS.Services
             if (string.IsNullOrEmpty(processName)) return "";
             lock (_lock)
             {
-                LogService.Debug($"Looking for witty text for '{processName}' (dict: {_wittyTexts.Count} entries)", "NarrativeService");
+                if (LogService.IsDebugEnabled) LogService.Debug($"Looking for witty text for '{processName}' (dict: {_wittyTexts.Count} entries)", "NarrativeService");
                 if (_sessionTexts.TryGetValue(processName, out var entry))
                 {
                     if (DateTime.Now - entry.LastUpdated < _rotationInterval)
                     {
-                        LogService.Debug($"Returning cached text: '{entry.Text}'", "NarrativeService");
+                        if (LogService.IsDebugEnabled) LogService.Debug($"Returning cached text: '{entry.Text}'", "NarrativeService");
                         return entry.Text;
                     }
                 }
                 string selectedText;
                 if (_wittyTexts.TryGetValue(processName, out var texts) && texts != null && texts.Count > 0)
                 {
-                    LogService.Debug($"Found {texts.Count} witty texts for '{processName}'", "NarrativeService");
+                    if (LogService.IsDebugEnabled) LogService.Debug($"Found {texts.Count} witty texts for '{processName}'", "NarrativeService");
                     if (texts.Count > 1 && entry != null)
                     {
                          string newText;
@@ -133,15 +133,15 @@ namespace geetRPCS.Services
                     {
                         selectedText = texts[_random.Next(texts.Count)];
                     }
-                    LogService.Debug($"Selected: '{selectedText}'", "NarrativeService");
+                    if (LogService.IsDebugEnabled) LogService.Debug($"Selected: '{selectedText}'", "NarrativeService");
                 }
                 else
                 {
-                    LogService.Debug($"No witty texts found for '{processName}', checking AppConfig...", "NarrativeService");
-                    var app = AppConfigManager.Apps.FirstOrDefault(a => a.Process.Equals(processName, StringComparison.OrdinalIgnoreCase));
+                    if (LogService.IsDebugEnabled) LogService.Debug($"No witty texts found for '{processName}', checking AppConfig...", "NarrativeService");
+                    var app = AppConfigManager.FindExact(processName);
                     if (app != null && app.WittyTexts != null && app.WittyTexts.Count > 0)
                     {
-                        LogService.Debug($"Found {app.WittyTexts.Count} texts in AppConfig", "NarrativeService");
+                        if (LogService.IsDebugEnabled) LogService.Debug($"Found {app.WittyTexts.Count} texts in AppConfig", "NarrativeService");
                         if (app.WittyTexts.Count > 1 && entry != null)
                         {
                              string newText;
@@ -160,7 +160,7 @@ namespace geetRPCS.Services
                     }
                     else
                     {
-                        LogService.Debug("Using fallback text", "NarrativeService");
+                        if (LogService.IsDebugEnabled) LogService.Debug("Using fallback text", "NarrativeService");
                         selectedText = "Working hard... 🔨";
                     }
                 }
