@@ -66,6 +66,11 @@ Most keys are self-explanatory, prefixed by where they appear:
 - `update_`: Update dialogs and status text.
 - `preview_`: Preview window text.
 - `window_`: Form titles.
+- `presence_`: Default Presence editor.
+- `addapp_`: Add Custom App dialog.
+- `guide_`: Built-in Help & Guide window content.
+
+> **Translators wanted:** the ~66 keys for the presence editors and the Help & Guide window were added to every language file with **English placeholder values** (except English and Indonesian, which are fully translated) so the parity test stays green. If you speak one of the other 22 languages, translating those keys is a great first contribution — the runtime already falls back to English per key until then.
 
 ## How to Add a New Language
 
