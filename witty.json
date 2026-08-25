@@ -1032,24 +1032,6 @@
 
   "_comment_media_tools": "========== MEDIA TOOLS ==========",
 
-  "HandBrake": [
-    "Compressing the compression 🗜️",
-    "RF value: 18 📊",
-    "Queue of 47 videos ⏳",
-    "Free converter king 👑",
-    "x264 vs x265 debate 🤔",
-    "Shrinking file sizes 📉",
-    "Preset hunting 📋",
-    "Audio passthru enabling ✅",
-    "Subtitle burning 🔤",
-    "Cropping autodetect 📐",
-    "Encoder: Very Fast 🏃",
-    "10-bit HEVC flex 💪",
-    "Queue overnight ⏳",
-    "DVD ripping vibes 📀",
-    "Batch encoding life 📦",
-    "Open source encoding 🎉"
-  ],
   "vlc": [
     "Playing everything 🎬",
     "Codec? What codec? 🎥",

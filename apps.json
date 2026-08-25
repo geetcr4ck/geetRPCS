@@ -1,6 +1,6 @@
 ﻿[
   {
-    "db_version": "1.4.1",
+    "db_version": "1.4.2",
     "_comment": "Database Version - DO NOT REMOVE"
   },
   {
@@ -569,16 +569,6 @@
   },
   {
     "_comment": "========== MEDIA TOOLS =========="
-  },
-  {
-    "process": "HandBrake",
-    "appName": "HandBrake",
-    "clientId": "1461668870585843814",
-    "largeKey": "handbrake",
-    "largeText": "HandBrake",
-    "smallKey": "geetrpcs-small",
-    "customDetails": "{witty_text}",
-    "buttons": []
   },
   {
     "_comment": "========== WEB BROWSERS =========="

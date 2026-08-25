@@ -135,3 +135,6 @@ assets/*
 
 # Freebuff local workspace
 .freebuff/
+
+# Local visual-test scratch (scripts, run outputs, screenshots)
+.visual/
