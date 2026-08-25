@@ -74,14 +74,16 @@ jobs:
           }
           Write-Output 'All relative Markdown links resolve.'
 
-      # Ensures the top navigation of both READMEs always links to the changelog
-      # and the release notes, so the docs navigation never silently loses them.
+      # Ensures the top navigation of both READMEs always links to the changelog,
+      # so the docs navigation never silently loses it. RELEASE/releasenotes.md is
+      # deliberately local-only (author's personal notes, gitignored), so links to
+      # it are covered by the Markdown link checker's WARN path instead.
       - name: Check README navigation links
         shell: pwsh
         run: |
           $required = @{
-            'README.md'    = @('CHANGELOG.md', 'RELEASE/releasenotes.md')
-            'README.id.md' = @('CHANGELOG.md', 'RELEASE/releasenotes.md')
+            'README.md'    = @('CHANGELOG.md')
+            'README.id.md' = @('CHANGELOG.md')
           }
           $missing = @()
           foreach ($file in $required.Keys) {
