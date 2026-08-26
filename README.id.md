@@ -186,6 +186,9 @@ Klik kanan ikon tray:
   <img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-3.png" width="280"/>
   <img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-4.png" width="280"/>
 </p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-5.png" width="280"/>
+</p>
 
 ---
 
