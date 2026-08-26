@@ -179,15 +179,18 @@ Klik kanan ikon tray:
 ### 📸 Screenshot
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-1.png" width="280"/>
-  <img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-2.png" width="280"/>
-</p>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-3.png" width="280"/>
-  <img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-4.png" width="280"/>
-</p>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-5.png" width="280"/>
+  <table>
+    <tr>
+      <td><img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-1.png" width="100%"/></td>
+      <td><img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-2.png" width="100%"/></td>
+      <td><img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-3.png" width="100%"/></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-4.png" width="100%"/></td>
+      <td><img src="https://raw.githubusercontent.com/geetcr4ck/geetRPCS/main/assets/screenshot-5.png" width="100%"/></td>
+    </tr>
+  </table>
 </p>
 
 ---
