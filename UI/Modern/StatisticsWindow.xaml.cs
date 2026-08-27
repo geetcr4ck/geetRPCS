@@ -63,9 +63,6 @@ namespace geetRPCS.UI.Modern
                 {
                     _instance = null;
                     IsOpenChanged?.Invoke(false);
-                    // Same deferred trim the ManageApps close path uses.
-                    System.Threading.Tasks.Task.Run(async () =>
-                    { await System.Threading.Tasks.Task.Delay(500); Utils.MemoryHelper.TrimMemory(); });
                 };
                 _instance.Show();
                 IsOpenChanged?.Invoke(true);

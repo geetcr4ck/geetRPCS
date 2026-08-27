@@ -179,8 +179,6 @@ namespace geetRPCS.UI
                                 MessageDialog.ShowError(LanguageManager.Current.ErrorSaveConfig ?? "Failed to save config.",
                                     LanguageManager.Current.AppName);
                         }
-                        System.Threading.Tasks.Task.Run(async () =>
-                        { await System.Threading.Tasks.Task.Delay(500); MemoryHelper.TrimMemory(); });
                     });
                 menu.Items.Add(customPresenceItem);
                 menu.Items.Add(new ToolStripSeparator());
@@ -234,8 +232,6 @@ namespace geetRPCS.UI
                     {
                         var guide = new GuideWindow();
                         guide.ShowDialog();
-                        System.Threading.Tasks.Task.Run(async () =>
-                        { await System.Threading.Tasks.Task.Delay(500); MemoryHelper.TrimMemory(); });
                     }));
                 menu.Items.Add(CreateMenuItem(LanguageManager.Current.MenuCheckUpdates, FluentGlyphs.Refresh, (_, __) => _shell.CheckForUpdatesFromMenu()));
                 menu.Items.Add(CreateMenuItem(LanguageManager.Current.MenuOpenLog, FluentGlyphs.Document, (_, __) => _shell.OpenLog()));

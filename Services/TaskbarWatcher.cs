@@ -41,6 +41,8 @@ namespace geetRPCS.Services
         private static DateTime _matchCacheStamp = DateTime.UtcNow;
         private static readonly TimeSpan MatchCacheTtl = TimeSpan.FromMinutes(5);
         private static readonly object _lock = new object();
+        private static readonly object _cacheLock = new object();
+        private static bool _started;
         private static IntPtr _hookHandle;
         private static IntPtr _nameChangeHookHandle;
         private static WinEventDelegate _eventDelegate;
@@ -61,6 +63,9 @@ namespace geetRPCS.Services
                 _lastTitle = null;
                 _lastHWnd = IntPtr.Zero;
                 _lastPid = 0;
+            }
+            lock (_cacheLock)
+            {
                 _matchCache.Clear();
                 _matchCacheStamp = DateTime.UtcNow;
             }
@@ -71,25 +76,58 @@ namespace geetRPCS.Services
 
         public static void Start(AppChanged callback)
         {
-            _callback = callback;
-            _eventDelegate = new WinEventDelegate(WinEventProc);
+            lock (_lock)
+            {
+                if (_started) return;
+                _started = true;
+                _callback = callback;
+                _eventDelegate = new WinEventDelegate(WinEventProc);
 
-            _debounceTimer = new System.Threading.Timer(_ => CheckCurrentApp(), null, Timeout.Infinite, Timeout.Infinite);
-            _livenessTimer = new System.Threading.Timer(_ => CheckLiveness(), null, 3000, 3000);
+                _debounceTimer = new System.Threading.Timer(_ => CheckCurrentApp(), null, Timeout.Infinite, Timeout.Infinite);
+                _livenessTimer = new System.Threading.Timer(_ => CheckLiveness(), null, 3000, 3000);
 
-            _hookHandle = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, _eventDelegate, 0, 0, WINEVENT_OUTOFCONTEXT);
-            _nameChangeHookHandle = SetWinEventHook(EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_NAMECHANGE, IntPtr.Zero, _eventDelegate, 0, 0, WINEVENT_OUTOFCONTEXT);
-
-            _cachedForegroundHwnd = GetForegroundWindow();
+                _hookHandle = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, _eventDelegate, 0, 0, WINEVENT_OUTOFCONTEXT);
+                _nameChangeHookHandle = SetWinEventHook(EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_NAMECHANGE, IntPtr.Zero, _eventDelegate, 0, 0, WINEVENT_OUTOFCONTEXT);
+                _cachedForegroundHwnd = GetForegroundWindow();
+            }
             CheckCurrentApp();
+        }
+
+        public static void Stop()
+        {
+            System.Threading.Timer debounceTimer;
+            System.Threading.Timer livenessTimer;
+            IntPtr hookHandle;
+            IntPtr nameChangeHookHandle;
+            lock (_lock)
+            {
+                if (!_started) return;
+                _started = false;
+                debounceTimer = _debounceTimer;
+                livenessTimer = _livenessTimer;
+                hookHandle = _hookHandle;
+                nameChangeHookHandle = _nameChangeHookHandle;
+                _debounceTimer = null;
+                _livenessTimer = null;
+                _hookHandle = IntPtr.Zero;
+                _nameChangeHookHandle = IntPtr.Zero;
+                _callback = null;
+                _eventDelegate = null;
+                _cachedForegroundHwnd = IntPtr.Zero;
+            }
+            debounceTimer?.Dispose();
+            livenessTimer?.Dispose();
+            if (hookHandle != IntPtr.Zero) UnhookWinEvent(hookHandle);
+            if (nameChangeHookHandle != IntPtr.Zero) UnhookWinEvent(nameChangeHookHandle);
         }
 
         private static void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
         {
+            if (!_started) return;
             if (eventType == EVENT_SYSTEM_FOREGROUND)
             {
                 _cachedForegroundHwnd = hwnd;
-                _debounceTimer.Change(250, Timeout.Infinite);
+                _debounceTimer?.Change(250, Timeout.Infinite);
             }
             // NAMECHANGE fires for EVERY title/name change system-wide; compare
             // against the cached foreground HWND (plain field compare) instead
@@ -101,15 +139,20 @@ namespace geetRPCS.Services
                 && idChild == CHILDID_SELF
                 && hwnd == _cachedForegroundHwnd)
             {
-                _debounceTimer.Change(250, Timeout.Infinite);
+                _debounceTimer?.Change(250, Timeout.Infinite);
             }
         }
 
         private static void CheckCurrentApp()
         {
+            if (!_started) return;
             var (proc, pid, hwnd, title) = GetCurrentApp();
+            AppChanged callback = null;
+            string callbackProc = null, callbackDetails = null, callbackState = null;
+            IntPtr callbackHwnd = IntPtr.Zero;
             lock (_lock)
             {
+                if (!_started) return;
                 if (proc != null)
                 {
                     if (proc == _lastFound && hwnd == _lastHWnd && title == _lastTitle)
@@ -118,34 +161,32 @@ namespace geetRPCS.Services
                     _lastTitle = title;
                     _lastHWnd = hwnd;
                     _lastPid = pid;
-                    _callback?.Invoke(proc, null, title, hwnd);
+                    callback = _callback;
+                    callbackProc = proc;
+                    callbackState = title;
+                    callbackHwnd = hwnd;
                 }
-                else
+                else if (_lastFound != null && !IsProcessAlive(_lastPid))
                 {
-                    if (_lastFound != null)
-                    {
-                        if (IsProcessAlive(_lastPid))
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            _lastFound = null;
-                            _lastTitle = null;
-                            _lastHWnd = IntPtr.Zero;
-                            _lastPid = 0;
-                            _callback?.Invoke("config", null, null, IntPtr.Zero);
-                        }
-                    }
+                    _lastFound = null;
+                    _lastTitle = null;
+                    _lastHWnd = IntPtr.Zero;
+                    _lastPid = 0;
+                    callback = _callback;
+                    callbackProc = "config";
                 }
             }
+            callback?.Invoke(callbackProc, callbackDetails, callbackState, callbackHwnd);
         }
 
         private static void CheckLiveness()
         {
+            if (!_started) return;
             bool checkForTitleChange = false;
+            AppChanged callback = null;
             lock (_lock)
             {
+                if (!_started) return;
                 if (_lastFound != null)
                 {
                     if (!IsProcessAlive(_lastPid))
@@ -154,17 +195,15 @@ namespace geetRPCS.Services
                         _lastTitle = null;
                         _lastHWnd = IntPtr.Zero;
                         _lastPid = 0;
-                        _callback?.Invoke("config", null, null, IntPtr.Zero);
+                        callback = _callback;
                     }
                     else
                     {
-                        // Fallback for browsers that do not emit a reliable
-                        // EVENT_OBJECT_NAMECHANGE notification for every tab title.
                         checkForTitleChange = true;
                     }
                 }
             }
-
+            callback?.Invoke("config", null, null, IntPtr.Zero);
             if (checkForTitleChange) CheckCurrentApp();
         }
 
@@ -225,15 +264,15 @@ namespace geetRPCS.Services
                             {
                                 if (string.IsNullOrEmpty(a.WindowTitle)) return false;
 
-                                string mode = a.TitleMatchMode?.ToLower() ?? "contains"; // Default is contains
+                                string mode = a.TitleMatchMode ?? "contains";
 
-                                if (mode == "exact")
+                                if (mode.Equals("exact", StringComparison.OrdinalIgnoreCase))
                                     return title.Equals(a.WindowTitle, StringComparison.OrdinalIgnoreCase);
-                                if (mode == "regex" && a.TitleRegex != null)
+                                if (mode.Equals("regex", StringComparison.OrdinalIgnoreCase) && a.TitleRegex != null)
                                     return a.TitleRegex.IsMatch(title);
-                                if (mode == "startswith")
+                                if (mode.Equals("startswith", StringComparison.OrdinalIgnoreCase))
                                     return title.StartsWith(a.WindowTitle, StringComparison.OrdinalIgnoreCase);
-                                if (mode == "endswith")
+                                if (mode.Equals("endswith", StringComparison.OrdinalIgnoreCase))
                                     return title.EndsWith(a.WindowTitle, StringComparison.OrdinalIgnoreCase);
 
                                 // default: contains
@@ -260,39 +299,42 @@ namespace geetRPCS.Services
         /// when neither the config nor the process changed.</summary>
         private static List<AppConfig> GetMatchesFor(string procName)
         {
-            var now = DateTime.UtcNow;
-            if (now - _matchCacheStamp > MatchCacheTtl)
+            lock (_cacheLock)
             {
-                _matchCache.Clear();
-                _matchCacheStamp = now;
+                var now = DateTime.UtcNow;
+                if (now - _matchCacheStamp > MatchCacheTtl)
+                {
+                    _matchCache.Clear();
+                    _matchCacheStamp = now;
+                }
+                if (_matchCache.TryGetValue(procName, out var cached)) return cached;
+
+                var exactMatches = AppConfigManager.Apps.Where(a =>
+                    AppConfigManager.ExactProcessNames.Contains(procName) &&
+                    a.Process != null &&
+                    a.Process.Equals(procName, StringComparison.OrdinalIgnoreCase)).ToList();
+
+                var advancedMatches = AppConfigManager.AdvancedProcessApps.Where(a =>
+                {
+                    if (string.IsNullOrEmpty(a.ProcessMatchMode) || string.IsNullOrEmpty(a.Process)) return false;
+
+                    string mode = a.ProcessMatchMode;
+                    if (mode.Equals("regex", StringComparison.OrdinalIgnoreCase) && a.ProcessRegex != null)
+                        return a.ProcessRegex.IsMatch(procName);
+                    if (mode.Equals("contains", StringComparison.OrdinalIgnoreCase))
+                        return procName.IndexOf(a.Process, StringComparison.OrdinalIgnoreCase) >= 0;
+                    if (mode.Equals("startswith", StringComparison.OrdinalIgnoreCase))
+                        return procName.StartsWith(a.Process, StringComparison.OrdinalIgnoreCase);
+                    if (mode.Equals("endswith", StringComparison.OrdinalIgnoreCase))
+                        return procName.EndsWith(a.Process, StringComparison.OrdinalIgnoreCase);
+
+                    return false;
+                }).ToList();
+
+                var all = exactMatches.Concat(advancedMatches).ToList();
+                _matchCache[procName] = all;
+                return all;
             }
-            if (_matchCache.TryGetValue(procName, out var cached)) return cached;
-
-            var exactMatches = AppConfigManager.Apps.Where(a =>
-                AppConfigManager.ExactProcessNames.Contains(procName) &&
-                a.Process != null &&
-                a.Process.Equals(procName, StringComparison.OrdinalIgnoreCase)).ToList();
-
-            var advancedMatches = AppConfigManager.AdvancedProcessApps.Where(a =>
-            {
-                if (string.IsNullOrEmpty(a.ProcessMatchMode) || string.IsNullOrEmpty(a.Process)) return false;
-
-                string mode = a.ProcessMatchMode.ToLower();
-                if (mode == "regex" && a.ProcessRegex != null)
-                    return a.ProcessRegex.IsMatch(procName);
-                if (mode == "contains")
-                    return procName.IndexOf(a.Process, StringComparison.OrdinalIgnoreCase) >= 0;
-                if (mode == "startswith")
-                    return procName.StartsWith(a.Process, StringComparison.OrdinalIgnoreCase);
-                if (mode == "endswith")
-                    return procName.EndsWith(a.Process, StringComparison.OrdinalIgnoreCase);
-
-                return false;
-            }).ToList();
-
-            var all = exactMatches.Concat(advancedMatches).ToList();
-            _matchCache[procName] = all;
-            return all;
         }
         private static string GetWindowTitle(IntPtr hWnd)
         {
@@ -300,8 +342,7 @@ namespace geetRPCS.Services
             int len = GetWindowTextLengthW(hWnd);
             if (len <= 0) return "";
             var sb = new StringBuilder(len + 1);
-            GetWindowTextW(hWnd, sb, sb.Capacity);
-            return sb.ToString();
+            return GetWindowTextW(hWnd, sb, sb.Capacity) > 0 ? sb.ToString() : "";
         }
         #region ----- Win32 -----
         [DllImport("user32.dll")]

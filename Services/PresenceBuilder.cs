@@ -134,22 +134,33 @@ namespace geetRPCS.Services
             if (string.IsNullOrEmpty(format)) return format ?? "";
             try
             {
-                string appName = Placeholders.GetAppName(processName);
-                string title = Placeholders.GetWindowTitle(hWnd);
-                string accessibleWindowName = PrivateBrowsingDetector.IsSupportedBrowser(processName)
-                    ? Placeholders.GetAccessibleWindowName(hWnd, title)
-                    : "";
-                bool shouldHideTitle = PrivateMode
-                    || PrivateBrowsingDetector.IsPrivateWindow(processName, title, accessibleWindowName);
-                if (shouldHideTitle)
-                    title = HiddenTitle;
-                else if (string.IsNullOrEmpty(title) || title.Length <= 3)
-                    title = LanguageManager.Current.Working;
-                string wittyText = NarrativeService.GetForApp(processName);
-                return format.Replace("{process_name}", processName ?? "")
-                    .Replace("{app_name}", appName ?? processName ?? "")
-                    .Replace("{window_title}", title)
-                    .Replace("{witty_text}", wittyText);
+                bool hasProcessName = format.IndexOf("{process_name}", StringComparison.Ordinal) >= 0;
+                bool hasAppName = format.IndexOf("{app_name}", StringComparison.Ordinal) >= 0;
+                bool hasWindowTitle = format.IndexOf("{window_title}", StringComparison.Ordinal) >= 0;
+                bool hasWittyText = format.IndexOf("{witty_text}", StringComparison.Ordinal) >= 0;
+
+                string appName = hasAppName ? Placeholders.GetAppName(processName) : null;
+                string title = null;
+                if (hasWindowTitle)
+                {
+                    title = PrivateMode ? HiddenTitle : Placeholders.GetWindowTitle(hWnd);
+                    if (!PrivateMode)
+                    {
+                        string accessibleWindowName = PrivateBrowsingDetector.IsSupportedBrowser(processName)
+                            ? Placeholders.GetAccessibleWindowName(hWnd, title)
+                            : "";
+                        if (PrivateBrowsingDetector.IsPrivateWindow(processName, title, accessibleWindowName))
+                            title = HiddenTitle;
+                        else if (string.IsNullOrEmpty(title) || title.Length <= 3)
+                            title = LanguageManager.Current.Working;
+                    }
+                }
+
+                string wittyText = hasWittyText ? NarrativeService.GetForApp(processName) : null;
+                return format.Replace("{process_name}", hasProcessName ? processName ?? "" : "")
+                    .Replace("{app_name}", hasAppName ? appName ?? processName ?? "" : "")
+                    .Replace("{window_title}", hasWindowTitle ? title : "")
+                    .Replace("{witty_text}", hasWittyText ? wittyText : "");
             }
             catch (Exception ex)
             {

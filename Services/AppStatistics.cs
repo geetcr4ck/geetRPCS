@@ -56,9 +56,10 @@ namespace geetRPCS.Services
                     return new AppStatistics();
                 }
                 string json = File.ReadAllText(StatsPath);
-                var stats = JsonSerializer.Deserialize(json, Utils.JsonContext.Default.AppStatistics);
+                var stats = JsonSerializer.Deserialize(json, Utils.JsonContext.Default.AppStatistics) ?? new AppStatistics();
+                stats.AppUsage ??= new Dictionary<string, AppUsageData>();
                 Log($"Loaded {stats.AppUsage.Count} tracked apps", "INFO");
-                return stats ?? new AppStatistics();
+                return stats;
             }
             catch (Exception ex)
             {
@@ -94,52 +95,53 @@ namespace geetRPCS.Services
         public void TrackApp(string processName, string appName, TimeSpan duration)
         {
             if (string.IsNullOrEmpty(processName)) return;
-            if (!AppUsage.ContainsKey(processName))
-                AppUsage[processName] = new AppUsageData
+            var now = DateTime.Now;
+            if (!AppUsage.TryGetValue(processName, out var data))
+            {
+                data = new AppUsageData
                 {
                     ProcessName = processName,
                     AppName = appName,
-                    FirstUsed = DateTime.Now
+                    FirstUsed = now
                 };
-            var data = AppUsage[processName];
+                AppUsage[processName] = data;
+            }
             data.AppName = appName;
             data.TotalTime += duration;
-            data.LastUsed = DateTime.Now;
+            data.LastUsed = now;
             data.SessionCount++;
-            var now = DateTime.Now;
             var today = now.Date;
             var weekStart = today.AddDays(-(int)today.DayOfWeek);
             var monthStart = new DateTime(now.Year, now.Month, 1);
-            if (!data.DailyUsage.ContainsKey(today)) data.DailyUsage[today] = TimeSpan.Zero;
-            data.DailyUsage[today] += duration;
-            if (!data.WeeklyUsage.ContainsKey(weekStart)) data.WeeklyUsage[weekStart] = TimeSpan.Zero;
-            data.WeeklyUsage[weekStart] += duration;
-            if (!data.MonthlyUsage.ContainsKey(monthStart)) data.MonthlyUsage[monthStart] = TimeSpan.Zero;
-            data.MonthlyUsage[monthStart] += duration;
+            data.DailyUsage.TryGetValue(today, out var dailyUsage);
+            data.DailyUsage[today] = dailyUsage + duration;
+            data.WeeklyUsage.TryGetValue(weekStart, out var weeklyUsage);
+            data.WeeklyUsage[weekStart] = weeklyUsage + duration;
+            data.MonthlyUsage.TryGetValue(monthStart, out var monthlyUsage);
+            data.MonthlyUsage[monthStart] = monthlyUsage + duration;
             TotalTrackedTime += duration;
         }
         #endregion
         #region ----- Queries -----
         public TimeSpan GetTodayUsage(string processName)
         {
-            if (!AppUsage.ContainsKey(processName)) return TimeSpan.Zero;
-            var today = DateTime.Now.Date;
-            return AppUsage[processName].DailyUsage.ContainsKey(today)
-                ? AppUsage[processName].DailyUsage[today] : TimeSpan.Zero;
+            var now = DateTime.Now;
+            return AppUsage.TryGetValue(processName, out var data) && data.DailyUsage.TryGetValue(now.Date, out var usage)
+                ? usage : TimeSpan.Zero;
         }
         public TimeSpan GetThisWeekUsage(string processName)
         {
-            if (!AppUsage.ContainsKey(processName)) return TimeSpan.Zero;
-            var weekStart = DateTime.Now.Date.AddDays(-(int)DateTime.Now.DayOfWeek);
-            return AppUsage[processName].WeeklyUsage.ContainsKey(weekStart)
-                ? AppUsage[processName].WeeklyUsage[weekStart] : TimeSpan.Zero;
+            var now = DateTime.Now;
+            var weekStart = now.Date.AddDays(-(int)now.DayOfWeek);
+            return AppUsage.TryGetValue(processName, out var data) && data.WeeklyUsage.TryGetValue(weekStart, out var usage)
+                ? usage : TimeSpan.Zero;
         }
         public TimeSpan GetThisMonthUsage(string processName)
         {
-            if (!AppUsage.ContainsKey(processName)) return TimeSpan.Zero;
-            var monthStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            return AppUsage[processName].MonthlyUsage.ContainsKey(monthStart)
-                ? AppUsage[processName].MonthlyUsage[monthStart] : TimeSpan.Zero;
+            var now = DateTime.Now;
+            var monthStart = new DateTime(now.Year, now.Month, 1);
+            return AppUsage.TryGetValue(processName, out var data) && data.MonthlyUsage.TryGetValue(monthStart, out var usage)
+                ? usage : TimeSpan.Zero;
         }
         public List<(string appName, TimeSpan time)> GetTopAppsToday(int count = 5)
         {

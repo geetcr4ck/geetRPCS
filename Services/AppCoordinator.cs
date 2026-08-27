@@ -429,7 +429,6 @@ namespace geetRPCS.Services
             // EmptyWorkingSet here hitches the hotkey/tray path (pause toggles
             // are user-visible UI actions). The deferred pattern is the same one
             // used for the window-close trims.
-            Task.Run(() => MemoryHelper.TrimMemory());
         }
 
         public void TogglePrivateMode()
@@ -671,7 +670,7 @@ namespace geetRPCS.Services
             _statsSaveTimer?.Dispose();
             _wittyTimer?.Stop();
             _wittyTimer?.Dispose();
-            _mouseTracker?.Stop();
+            TaskbarWatcher.Stop();
             _mouseTracker?.Dispose();
             _mouseTracker = null;
             _rpc?.ClearPresence();

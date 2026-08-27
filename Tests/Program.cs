@@ -180,6 +180,21 @@ namespace Tests
             Check("Czech Firefox private browsing detected", PrivateBrowsingDetector.IsPrivateWindow("firefox", "Banka - Soukromé prohlížení"));
             var maskBuilder = new PresenceBuilder(new Config()) { PrivateMode = true };
             Check("hidden window title is redacted with asterisks", maskBuilder.ReplacePlaceholders("{window_title}", "chrome", IntPtr.Zero) == "**********");
+            Check("process placeholder replaces process name", maskBuilder.ReplacePlaceholders("Running {process_name}", "code", IntPtr.Zero) == "Running code");
+            Check("plain template stays unchanged", maskBuilder.ReplacePlaceholders("Working", "chrome", IntPtr.Zero) == "Working");
+
+            Console.WriteLine("App statistics tracking:");
+            var statistics = new AppStatistics();
+            var duration = TimeSpan.FromMinutes(5);
+            statistics.TrackApp("code", "Visual Studio Code", duration);
+            statistics.TrackApp("code", "Visual Studio Code", duration);
+            var tracked = statistics.AppUsage["code"];
+            Check("statistics accumulate total time", tracked.TotalTime == TimeSpan.FromMinutes(10));
+            Check("statistics accumulate session count", tracked.SessionCount == 2);
+            Check("statistics accumulate daily bucket", statistics.GetTodayUsage("code") == TimeSpan.FromMinutes(10));
+            Check("statistics accumulate weekly bucket", statistics.GetThisWeekUsage("code") == TimeSpan.FromMinutes(10));
+            Check("statistics accumulate monthly bucket", statistics.GetThisMonthUsage("code") == TimeSpan.FromMinutes(10));
+            Check("statistics accumulate global total", statistics.TotalTrackedTime == TimeSpan.FromMinutes(10));
 
             Console.WriteLine("Effective app overrides (AppConfigManager.GetEffectiveApp):");
             var baseApp = new AppConfig

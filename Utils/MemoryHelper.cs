@@ -23,8 +23,10 @@ namespace geetRPCS.Utils
     {
         [DllImport("psapi.dll")]
         private static extern bool EmptyWorkingSet(IntPtr hProcess);
+        private static int _trimInProgress;
         public static void TrimMemory()
         {
+            if (System.Threading.Interlocked.Exchange(ref _trimInProgress, 1) != 0) return;
             try
             {
                 long beforeMb = Environment.WorkingSet / (1024 * 1024);
@@ -47,6 +49,10 @@ namespace geetRPCS.Utils
             catch (Exception ex)
             {
                 Debug.WriteLine($"TrimMemory error: {ex.Message}");
+            }
+            finally
+            {
+                System.Threading.Volatile.Write(ref _trimInProgress, 0);
             }
         }
     }

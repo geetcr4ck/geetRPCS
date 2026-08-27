@@ -48,12 +48,23 @@ namespace geetRPCS.Services
             lock (_lock) { return _statistics.PrepareJson(); }
         }
 
-        public Task ResetAsync() => _statistics.ResetAsync();
+        public async Task ResetAsync()
+        {
+            string json;
+            lock (_lock)
+            {
+                _statistics.AppUsage.Clear();
+                _statistics.TotalTrackedTime = TimeSpan.Zero;
+                json = _statistics.PrepareJson();
+            }
+            await AppStatistics.WriteJsonAsync(json).ConfigureAwait(false);
+        }
 
         #region ----- Views -----
         public void ShowToday()
         {
-            var topApps = _statistics.GetTopAppsToday(10);
+            List<(string appName, TimeSpan time)> topApps;
+            lock (_lock) topApps = _statistics.GetTopAppsToday(10);
             var vm = new StatisticsViewModel
             {
                 Title = LanguageManager.Current.StatsTodayTitle,
@@ -69,10 +80,14 @@ namespace geetRPCS.Services
         public void ShowWeek()
         {
             var weekStart = DateTime.Now.Date.AddDays(-(int)DateTime.Now.DayOfWeek);
-            var appsThisWeek = _statistics.AppUsage.Values
-                .Where(a => a.WeeklyUsage.ContainsKey(weekStart))
-                .Select(a => (a.AppName, a.WeeklyUsage[weekStart]))
-                .OrderByDescending(x => x.Item2).Take(10).ToList();
+            List<(string AppName, TimeSpan Time)> appsThisWeek;
+            lock (_lock)
+            {
+                appsThisWeek = _statistics.AppUsage.Values
+                    .Where(a => a.WeeklyUsage.ContainsKey(weekStart))
+                    .Select(a => (a.AppName, a.WeeklyUsage[weekStart]))
+                    .OrderByDescending(x => x.Item2).Take(10).ToList();
+            }
             var vm = new StatisticsViewModel
             {
                 Title = LanguageManager.Current.StatsWeekTitle,
@@ -89,10 +104,14 @@ namespace geetRPCS.Services
         public void ShowMonth()
         {
             var monthStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            var appsThisMonth = _statistics.AppUsage.Values
-                .Where(a => a.MonthlyUsage.ContainsKey(monthStart))
-                .Select(a => (a.AppName, a.MonthlyUsage[monthStart]))
-                .OrderByDescending(x => x.Item2).Take(10).ToList();
+            List<(string AppName, TimeSpan Time)> appsThisMonth;
+            lock (_lock)
+            {
+                appsThisMonth = _statistics.AppUsage.Values
+                    .Where(a => a.MonthlyUsage.ContainsKey(monthStart))
+                    .Select(a => (a.AppName, a.MonthlyUsage[monthStart]))
+                    .OrderByDescending(x => x.Item2).Take(10).ToList();
+            }
             var vm = new StatisticsViewModel
             {
                 Title = LanguageManager.Current.StatsMonthTitle,
@@ -108,7 +127,17 @@ namespace geetRPCS.Services
 
         public void ShowAllTime()
         {
-            var allTimeTop = _statistics.GetTopAppsAllTime(10);
+            List<(string appName, TimeSpan time)> allTimeTop;
+            DateTime firstUsed = default;
+            TimeSpan totalTrackedTime;
+            int totalApps;
+            lock (_lock)
+            {
+                allTimeTop = _statistics.GetTopAppsAllTime(10);
+                totalApps = _statistics.AppUsage.Count;
+                totalTrackedTime = _statistics.TotalTrackedTime;
+                if (totalApps > 0) firstUsed = _statistics.AppUsage.Values.Min(a => a.FirstUsed);
+            }
             var vm = new StatisticsViewModel
             {
                 Title = LanguageManager.Current.StatsAllTimeTitle,
@@ -118,9 +147,9 @@ namespace geetRPCS.Services
             if (allTimeTop.Count > 0)
             {
                 vm.Subtitle = $"{LanguageManager.Current.StatsTrackingSince} " +
-                    $"{_statistics.AppUsage.Values.Min(a => a.FirstUsed):MMM dd, yyyy}";
-                vm.Totals.Add($"{LanguageManager.Current.StatsTotalTracked} {FormatTimeSpan(_statistics.TotalTrackedTime)}");
-                vm.Totals.Add($"{LanguageManager.Current.StatsTotalApps} {_statistics.AppUsage.Count}");
+                    $"{firstUsed:MMM dd, yyyy}";
+                vm.Totals.Add($"{LanguageManager.Current.StatsTotalTracked} {FormatTimeSpan(totalTrackedTime)}");
+                vm.Totals.Add($"{LanguageManager.Current.StatsTotalApps} {totalApps}");
             }
             StatisticsWindow.Show(vm);
         }

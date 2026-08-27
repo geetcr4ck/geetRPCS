@@ -41,7 +41,9 @@ namespace geetRPCS.Services
 
         private IntPtr _mouseHookHandle = IntPtr.Zero;
         private LowLevelMouseProc _mouseProc;
-        private bool _isHookInstalled, _isRunning, _isEnabled = true;
+        private bool _isHookInstalled;
+        private volatile bool _isRunning, _isEnabled = true;
+        private readonly object _lifecycleLock = new object();
 
         private readonly object _accumLock = new object();
         private double _pendingDistance;
@@ -102,24 +104,35 @@ namespace geetRPCS.Services
         #region ----- Public Methods -----
         public void Start()
         {
-            if (_isRunning) return;
-            try
+            lock (_lifecycleLock)
             {
-                _isRunning = true;
-                InstallHook();
-                StartAnalysisThread();
-                Log("Mouse Activity Tracker started", "INFO");
-            }
-            catch (Exception ex)
-            {
-                Log($"Failed to start Mouse Activity Tracker: {ex.Message}", "ERROR");
-                _isRunning = false;
+                if (_isRunning) return;
+                try
+                {
+                    _isRunning = true;
+                    InstallHook();
+                    StartAnalysisThread();
+                    Log("Mouse Activity Tracker started", "INFO");
+                }
+                catch (Exception ex)
+                {
+                    Log($"Failed to start Mouse Activity Tracker: {ex.Message}", "ERROR");
+                    _isRunning = false;
+                }
             }
         }
         public void Stop()
         {
-            _isRunning = false;
-            UninstallHook();
+            Thread analysisThread;
+            lock (_lifecycleLock)
+            {
+                _isRunning = false;
+                UninstallHook();
+                analysisThread = _analysisThread;
+                _analysisThread = null;
+            }
+            if (analysisThread != null && analysisThread != Thread.CurrentThread)
+                analysisThread.Join(1000);
             Log("Mouse Activity Tracker stopped", "INFO");
         }
         public void SetEnabled(bool enabled)
@@ -219,9 +232,9 @@ namespace geetRPCS.Services
 
                         if (!_lastHookPosition.IsEmpty)
                         {
-                            int dx = x - _lastHookPosition.X;
-                            int dy = y - _lastHookPosition.Y;
-                            double dist = Math.Sqrt(dx * dx + dy * dy);
+                            long dx = (long)x - _lastHookPosition.X;
+                            long dy = (long)y - _lastHookPosition.Y;
+                            double dist = Math.Sqrt((double)dx * dx + (double)dy * dy);
 
                             lock (_accumLock)
                             {
@@ -258,6 +271,8 @@ namespace geetRPCS.Services
             int[] clickBuffer = new int[CLICK_BUFFER_SIZE];
             int vIndex = 0;
             int cIndex = 0;
+            double velocityTotal = 0;
+            int clickTotal = 0;
 
             while (_isRunning)
             {
@@ -284,19 +299,18 @@ namespace geetRPCS.Services
 
                     // Velocity (px/s) - interval is approx 0.5s
                     double currentVelocity = snappedDistance / 0.5;
+                    velocityTotal -= velocityBuffer[vIndex];
                     velocityBuffer[vIndex] = currentVelocity;
+                    velocityTotal += currentVelocity;
                     vIndex = (vIndex + 1) % VELOCITY_BUFFER_SIZE;
-
-                    double avgVelocity = 0;
-                    foreach (var v in velocityBuffer) avgVelocity += v;
-                    avgVelocity /= VELOCITY_BUFFER_SIZE;
+                    double avgVelocity = velocityTotal / VELOCITY_BUFFER_SIZE;
 
                     // Clicks (CPM) - stored in 0.5s buckets
+                    clickTotal -= clickBuffer[cIndex];
                     clickBuffer[cIndex] = snappedClicks;
+                    clickTotal += snappedClicks;
                     cIndex = (cIndex + 1) % CLICK_BUFFER_SIZE;
-
-                    int totalClicksInMinute = 0;
-                    foreach (var c in clickBuffer) totalClicksInMinute += c;
+                    int totalClicksInMinute = clickTotal;
 
                     // Update State
                     EnergyLevel newEnergy;
@@ -314,30 +328,31 @@ namespace geetRPCS.Services
                     }
 
                     // Update public properties with hysteresis for stability
+                    bool energyChanged = false;
                     lock (_readLock)
                     {
                         _averageVelocity = avgVelocity;
                         _clicksPerMinute = totalClicksInMinute;
 
-                        // State stability hysteresis: require consistent state for ~2 seconds before changing
                         if (newEnergy == _pendingEnergy)
                         {
                             _stabilityCounter++;
                             if (_stabilityCounter >= STATE_STABILITY_THRESHOLD && newEnergy != _currentEnergy)
                             {
                                 _currentEnergy = newEnergy;
-                                try { OnEnergyChanged?.Invoke(newEnergy, avgVelocity, totalClicksInMinute); } catch {}
-                                // DEBUG: these transitions were 27% of all production
-                                // log lines at INFO (Normal/Relaxing flapping).
-                                Log($"Energy: {newEnergy} (V: {avgVelocity:F0}, CPM: {totalClicksInMinute})", "DEBUG");
+                                energyChanged = true;
                             }
                         }
                         else
                         {
-                            // New pending state, reset counter
                             _pendingEnergy = newEnergy;
                             _stabilityCounter = 1;
                         }
+                    }
+                    if (energyChanged)
+                    {
+                        try { OnEnergyChanged?.Invoke(newEnergy, avgVelocity, totalClicksInMinute); } catch { }
+                        Log($"Energy: {newEnergy} (V: {avgVelocity:F0}, CPM: {totalClicksInMinute})", "DEBUG");
                     }
                 }
                 catch (Exception ex) { Log($"Analysis loop error: {ex.Message}", "ERROR"); }
@@ -372,7 +387,6 @@ namespace geetRPCS.Services
         public void Dispose()
         {
             Stop();
-            _analysisThread = null;
         }
         #endregion
     }

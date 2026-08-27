@@ -181,7 +181,6 @@ class Program : ApplicationContext, IAppHost, ITrayShell
             // Off the UI thread: TrimMemory now runs a blocking Gen2 collection
             // (all call sites are background), and the startup path must not
             // pay that on the UI thread.
-            Task.Run(() => MemoryHelper.TrimMemory());
         }
         catch (Exception ex)
         {
@@ -258,7 +257,6 @@ class Program : ApplicationContext, IAppHost, ITrayShell
             _previewForm = null;
             // Defer the trim off the UI thread: a full blocking Gen2 GC here
             // hitches the tray/hotkey path that just toggled the preview.
-            Task.Run(() => MemoryHelper.TrimMemory());
         }
     }
 
@@ -301,7 +299,6 @@ class Program : ApplicationContext, IAppHost, ITrayShell
             // Dialog closed (Esc / title-bar X): release the row working set
             // off-thread. The next open is a fresh window (native DWM open
             // animation), so nothing needs to be kept warm here.
-            Task.Run(async () => { await Task.Delay(500); MemoryHelper.TrimMemory(); });
         };
         return win;
     }
@@ -539,13 +536,11 @@ class Program : ApplicationContext, IAppHost, ITrayShell
         {
             TrayMenuController.SetToggleState(_trayMenu?.PreviewMenuItem, false);
             _previewForm = null; // WPF windows cannot be re-shown after Close
-            Task.Run(async () => { await Task.Delay(500); MemoryHelper.TrimMemory(); });
         };
         _previewForm.IsVisibleChanged += (sender, e) =>
         {
             TrayMenuController.SetToggleState(_trayMenu?.PreviewMenuItem, _previewForm?.IsVisible == true);
             // Deferred: GC.Collect(2) on the UI thread would hitch the toggle.
-            if (_previewForm != null && !_previewForm.IsVisible) Task.Run(() => MemoryHelper.TrimMemory());
         };
     }
 
