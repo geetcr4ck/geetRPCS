@@ -136,7 +136,7 @@ Output lands in `publish/portable/` or `publish/minimal/`.
 | 🧊 **3D & Animation** | Blender, Autodesk Maya, ZBrush, Substance 3D Painter |
 | 🏛️ **CAD** | SketchUp, AutoCAD |
 | 🎨 **Graphic & Photo** | Adobe Photoshop, Illustrator, Lightroom, GIMP, Inkscape, Affinity Studio, CorelDRAW, Krita, Clip Studio Paint, Aseprite |
-| 💻 **UI/UX Design** | Figma, Canva |
+| 💻 **UI/UX Design** | Figma, Canva, Miro |
 | 🌐 **Web Browsers** | Brave, Google Chrome, Mozilla Firefox, Zen Browser, Microsoft Edge |
 | 📊 **Office** | Word, Excel, PowerPoint, Notion |
 | 💬 **Communication** | Telegram, Slack, WhatsApp, Zoom |

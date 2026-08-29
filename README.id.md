@@ -136,7 +136,7 @@ Output ada di `publish/portable/` atau `publish/minimal/`.
 | 🧊 **3D & Animasi** | Blender, Autodesk Maya, ZBrush, Substance 3D Painter |
 | 🏛️ **CAD** | SketchUp, AutoCAD |
 | 🎨 **Grafis & Foto** | Adobe Photoshop, Illustrator, Lightroom, GIMP, Inkscape, Affinity Studio, CorelDRAW, Krita, Clip Studio Paint, Aseprite |
-| 💻 **UI/UX Design** | Figma, Canva |
+| 💻 **UI/UX Design** | Figma, Canva, Miro |
 | 🌐 **Web Browser** | Brave, Google Chrome, Mozilla Firefox, Zen Browser, Microsoft Edge |
 | 📊 **Office** | Word, Excel, PowerPoint, Notion |
 | 💬 **Komunikasi** | Telegram, Slack, WhatsApp, Zoom |

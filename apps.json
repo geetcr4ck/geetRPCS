@@ -1,6 +1,6 @@
 ﻿[
   {
-    "db_version": "1.4.3",
+    "db_version": "1.4.4",
     "_comment": "Database Version - DO NOT REMOVE"
   },
   {
@@ -563,6 +563,16 @@
     "clientId": "1461588833647853600",
     "largeKey": "canva",
     "largeText": "Canva",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "Miro",
+    "appName": "Miro",
+    "clientId": "1543218469515034694",
+    "largeKey": "miro",
+    "largeText": "Miro",
     "smallKey": "geetrpcs-small",
     "customDetails": "{witty_text}",
     "buttons": []
