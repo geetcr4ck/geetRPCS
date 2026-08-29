@@ -4,6 +4,22 @@ All notable changes to **geetRPCS**, newest first. Entries before v1.3.4 are con
 
 ---
 
+## v1.4.4 — Miro Support
+
+This update adds **Miro** to the app database so the collaborative whiteboard is detected and surfaces a Rich Presence with a custom icon and 18 new witty status lines. The data-driven model keeps the change to two JSON files (no code) and bumps both database versions to keep the in-app updater in sync.
+
+### Added ✨
+
+- `[FEAT]` **Miro App Entry** – New entry in `apps.json` under `UI/UX DESIGN` (process `Miro`, Discord Application ID `1543218469515034694`, large image key `miro`). The desktop app is detected by process name and switches to a dedicated Discord client; `apps.json`'s `db_version` bumps to `1.4.4` and the existing `Tests/Program.cs` validator already confirms the 19-digit clientId, unique process, and empty-button shape.
+- `[FEAT]` **Miro Witty Texts** – 18 new lines in `witty.json` keyed by `Miro` (sticky-note storm, infinite canvas flex, mind map madness, wireframe warrior, design sprint running, voting dot democracy, etc.), matching the playful one-emoji-per-line tone of the Figma / Canva / Notion sets. `witty.json`'s `_version` bumps to `1.2.1` so the in-app updater picks the change up.
+- `[ASSET]` **Miro Icon** – `assets/assetpack/miro.png` is added and `assets/AssetPack.zip` is rebuilt to include it so the in-app asset-pack download stays in sync with the source folder. Discord-side, the icon must be uploaded to the Miro Discord application under the asset name `miro` (matches `largeKey`); without that, the presence posts but the large image is blank.
+
+### Changed 🔄
+
+- `[DOC]` **README Mirrors** – `README.md` and `README.id.md` list Miro in the UI/UX Design row of the supported-apps table, alongside Figma and Canva.
+
+---
+
 ## v1.4.2 — The Incognito, Custom Presence GUI & Built-in Guide Update
 
 This update is about **privacy masking**, the **move off WinForms**, and removing the last reasons to open a JSON file: **rich presence can now be customized entirely from the system tray**, and a **built-in Help & Guide window** explains how the app works without opening GitHub. Every window and dialog is now Fluent WPF (`UI/Modern/`, ModernWpf), leaving WinForms to host only the tray icon and its Fluent-rendered menu. Browser private/incognito windows are detected automatically in any UI language, and the window title is redacted from Discord Rich Presence (the tested external patch now lives in the source tree; no PowerShell script is needed anymore). On top of that, the Manage Apps window lost its white flash and gained the native Windows open animation, and an instrumentation-driven pass cut idle CPU and RAM (working set avg 78.4 → 69.3 MB, max 90.6 → 72.6 MB; idle CPU 3.83% → 3.29% of one core, verified with `Tests/measure.ps1` and a ~142 samples/s screen-capture watcher).
