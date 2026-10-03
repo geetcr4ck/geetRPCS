@@ -135,7 +135,7 @@ Output lands in `publish/portable/` or `publish/minimal/`.
 | 🎬 **Video Editing** | Adobe Premiere Pro, Adobe After Effects, DaVinci Resolve, Wondershare Filmora, Vegas Pro, CapCut |
 | 🧊 **3D & Animation** | Blender, Autodesk Maya, ZBrush, Substance 3D Painter |
 | 🏛️ **CAD** | SketchUp, AutoCAD |
-| 🎨 **Graphic & Photo** | Adobe Photoshop, Illustrator, Lightroom, GIMP, Inkscape, Affinity Studio, CorelDRAW, Krita, Clip Studio Paint, Aseprite |
+| 🎨 **Graphic & Photo** | Adobe Photoshop, Illustrator, Lightroom, GIMP, Inkscape, Affinity Studio, CorelDRAW, Krita, Clip Studio Paint, Aseprite, Photon Studio |
 | 💻 **UI/UX Design** | Figma, Canva, Miro |
 | 🌐 **Web Browsers** | Brave, Google Chrome, Mozilla Firefox, Zen Browser, Microsoft Edge |
 | 📊 **Office** | Word, Excel, PowerPoint, Notion |

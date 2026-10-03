@@ -545,6 +545,16 @@
     "buttons": []
   },
   {
+    "process": "Photon Studio",
+    "appName": "Photon Studio",
+    "clientId": "1555925441368555571",
+    "largeKey": "photon",
+    "largeText": "Photon Studio",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
     "_comment": "========== UI/UX DESIGN =========="
   },
   {
