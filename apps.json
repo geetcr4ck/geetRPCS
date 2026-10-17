@@ -1,6 +1,6 @@
 ﻿[
   {
-    "db_version": "1.4.4",
+    "db_version": "1.4.5",
     "_comment": "Database Version - DO NOT REMOVE"
   },
   {
@@ -583,6 +583,139 @@
     "clientId": "1543218469515034694",
     "largeKey": "miro",
     "largeText": "Miro",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "_comment": "========== CRAFT SUITE =========="
+  },
+  {
+    "process": "photocraft",
+    "appName": "PhotoCraft",
+    "clientId": "1560457423523680317",
+    "largeKey": "photocraft",
+    "largeText": "PhotoCraft",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "vectorcraft",
+    "appName": "VectorCraft",
+    "clientId": "1560457583016550470",
+    "largeKey": "vectorcraft",
+    "largeText": "VectorCraft",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "filmcraft",
+    "appName": "FilmCraft",
+    "clientId": "1560457713572519966",
+    "largeKey": "filmcraft",
+    "largeText": "FilmCraft",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "lightcraft",
+    "appName": "LightCraft",
+    "clientId": "1560457899887829022",
+    "largeKey": "lightcraft",
+    "largeText": "LightCraft",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "pdfcraft",
+    "appName": "PdfCraft",
+    "clientId": "1560458043391742024",
+    "largeKey": "pdfcraft",
+    "largeText": "PdfCraft",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "effectcraft",
+    "appName": "EffectCraft",
+    "clientId": "1560458202322305044",
+    "largeKey": "effectcraft",
+    "largeText": "EffectCraft",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "designcraft",
+    "appName": "DesignCraft",
+    "clientId": "1560458364415119370",
+    "largeKey": "designcraft",
+    "largeText": "DesignCraft",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "figcraft",
+    "appName": "FigCraft",
+    "clientId": "1560458530014761081",
+    "largeKey": "figcraft",
+    "largeText": "FigCraft",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "wordcraft",
+    "appName": "WordCraft",
+    "clientId": "1560458687611666492",
+    "largeKey": "wordcraft",
+    "largeText": "WordCraft",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "soundcraft",
+    "appName": "SoundCraft",
+    "clientId": "1560458800224403608",
+    "largeKey": "soundcraft",
+    "largeText": "SoundCraft",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "deckcraft",
+    "appName": "DeckCraft",
+    "clientId": "1560700962790834238",
+    "largeKey": "deckcraft",
+    "largeText": "DeckCraft",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "cadcraft",
+    "appName": "CADCraft",
+    "clientId": "1560701092436639876",
+    "largeKey": "cadcraft",
+    "largeText": "CADCraft",
+    "smallKey": "geetrpcs-small",
+    "customDetails": "{witty_text}",
+    "buttons": []
+  },
+  {
+    "process": "gridcraft",
+    "appName": "GridCraft",
+    "clientId": "1560701235202359399",
+    "largeKey": "gridcraft",
+    "largeText": "GridCraft",
     "smallKey": "geetrpcs-small",
     "customDetails": "{witty_text}",
     "buttons": []
