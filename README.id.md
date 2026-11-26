@@ -15,6 +15,11 @@
 </p>
 
 <p align="center">
+  <a href="https://fmhy.net/social-media-tools#client-customization">
+    <img src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/available/fmhy/compact.svg" alt="FMHY"/>
+  </a>
+
+<p align="center">
   <img src="https://img.shields.io/github/v/release/geetcr4ck/geetRPCS?style=flat&label=Version&color=success" alt="Version"/>
   <img src="https://img.shields.io/github/downloads/geetcr4ck/geetRPCS/total?style=flat&label=Downloads&color=blue" alt="Downloads"/>
   <img src="https://komarev.com/ghpvc/?username=geetcr4ck&color=blue&style=flat&label=Views" alt="Visitor Count"/>
